@@ -163,13 +163,11 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/diag_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/einsum_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/einsum_grad_kernel.cu
-  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/elementwise_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/decode_jpeg_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/backends/dynload/nvjpeg.cc
   ${PADDLE_SOURCE_DIR}/paddle/phi/backends/dynload/cupti.cc
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/embedding_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/embedding_grad_kernel.cu
-  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/embedding_with_scaled_gradient_grad_kernel_register.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/expand_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/expand_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/expand_as_grad_kernel.cu

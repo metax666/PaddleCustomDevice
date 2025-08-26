@@ -1,5 +1,4 @@
-// 2024 - Modified by MetaX Integrated Circuits (Shanghai) Co., Ltd. All Rights
-// Reserved. Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
+// Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,14 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "paddle/phi/kernels/gpu/embedding_with_scaled_gradient_grad_kernel.cu"  // NOLINT
+#include "paddle/phi/backends/gpu/gpu_context.h"
+#include "paddle/phi/core/kernel_registry.h"
+#include "paddle/phi/kernels/eye_kernel.h"
+#include "paddle/phi/kernels/impl/eye_kernel_impl.h"
 
-PD_CUSTOM_KERNEL_REGISTER(embedding_with_scaled_gradient_grad,
+PD_CUSTOM_KERNEL_REGISTER(eye,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::EmbeddingWithScaledGradientGradKernel,
+                          phi::EyeKernel,
                           float,
                           double,
+                          int64_t,
+                          int,
                           phi::dtype::float16,
                           phi::dtype::bfloat16,
                           phi::dtype::complex<float>,
