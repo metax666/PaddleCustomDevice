@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/funcs/stack_and_unstack.h"
-#include "paddle/phi/kernels/stack_grad_kernel.h"
+#include "paddle/phi/kernels/gpu/stack_grad_kernel.cu"  // NOLINT
 
 PD_CUSTOM_KERNEL_REGISTER(stack_grad,
                           metax_gpu,
@@ -30,5 +28,7 @@ PD_CUSTOM_KERNEL_REGISTER(stack_grad,
                           int16_t,
                           phi::dtype::float16,
                           phi::dtype::bfloat16,
+                          phi::dtype::float8_e4m3fn,
+                          phi::dtype::float8_e5m2,
                           phi::dtype::complex<float>,
                           phi::dtype::complex<double>) {}
