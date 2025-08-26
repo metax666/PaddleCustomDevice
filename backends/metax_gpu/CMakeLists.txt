@@ -628,7 +628,6 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/kps/reduce_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/legacy/kps/reduce_max_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/array_kernel.cc
-  ${CMAKE_SOURCE_DIR}/kernels/funcs/blas/cublas.cc
   ${CMAKE_SOURCE_DIR}/kernels/gpudnn/cudnn.cc
   ${CMAKE_SOURCE_DIR}/kernels/metax_context.cc
   ${CMAKE_SOURCE_DIR}/kernels/cross_entropy_kernel_register.cu
@@ -673,6 +672,7 @@ file(
   kernels/gpudnn/*.cu
   kernels/cuda_kernels/*.cc
   kernels/cuda_kernels/*.cu
+  kernels/funcs/blas/*.cc
   kernels/ernie_core/*.cu
   kernels/ernie_core/rms_norm_kernel_register.cu
   kernels/ernie_core/top_p_sampling_kernel_register.cu
