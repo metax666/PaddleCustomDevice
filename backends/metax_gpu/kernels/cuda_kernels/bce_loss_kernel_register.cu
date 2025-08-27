@@ -1,4 +1,4 @@
-// Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
+// Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/cum_grad_kernel.h"
+#include "paddle/phi/kernels/gpu/bce_loss_kernel.cu"  // NOLINT
 
-PD_CUSTOM_KERNEL_REGISTER(cumsum_grad,
+PD_CUSTOM_KERNEL_REGISTER(bce_loss,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::CumsumGradKernel,
+                          phi::BCELossKernel,
                           float,
                           double,
-                          uint8_t,
-                          int8_t,
-                          int16_t,
-                          int,
-                          int64_t,
-                          phi::dtype::float16,
-                          phi::dtype::bfloat16,
-                          phi::dtype::complex<float>,
-                          phi::dtype::complex<double>) {}
+                          phi::dtype::float16) {}

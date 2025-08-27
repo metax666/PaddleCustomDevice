@@ -163,13 +163,11 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/diag_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/einsum_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/einsum_grad_kernel.cu
-  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/elementwise_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/decode_jpeg_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/backends/dynload/nvjpeg.cc
   ${PADDLE_SOURCE_DIR}/paddle/phi/backends/dynload/cupti.cc
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/embedding_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/embedding_grad_kernel.cu
-  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/embedding_with_scaled_gradient_grad_kernel_register.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/expand_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/expand_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/expand_as_grad_kernel.cu
@@ -481,6 +479,9 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/save_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/dropout_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/dropout_grad_kernel.cu
+  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/index_add_grad_kernel.cu
+  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/bce_loss_kernel.cu
+  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/bce_loss_grad_kernel.cu
   # ############################################################################
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/array_grad_kernel.cc
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/set_kernel.cc
@@ -627,7 +628,6 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/kps/reduce_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/legacy/kps/reduce_max_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/array_kernel.cc
-  ${CMAKE_SOURCE_DIR}/kernels/funcs/blas/cublas.cc
   ${CMAKE_SOURCE_DIR}/kernels/gpudnn/cudnn.cc
   ${CMAKE_SOURCE_DIR}/kernels/metax_context.cc
   ${CMAKE_SOURCE_DIR}/kernels/cross_entropy_kernel_register.cu
@@ -672,6 +672,7 @@ file(
   kernels/gpudnn/*.cu
   kernels/cuda_kernels/*.cc
   kernels/cuda_kernels/*.cu
+  kernels/funcs/blas/*.cc
   kernels/ernie_core/*.cu
   kernels/ernie_core/rms_norm_kernel_register.cu
   kernels/ernie_core/top_p_sampling_kernel_register.cu
