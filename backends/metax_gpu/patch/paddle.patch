@@ -997,16 +997,3 @@ diff --git a/third_party/yaml-cpp b/third_party/yaml-cpp
 @@ -1 +1 @@
 -Subproject commit 1d8ca1f35eb3a9c9142462b28282a848e5d29a91
 +Subproject commit 1d8ca1f35eb3a9c9142462b28282a848e5d29a91-dirty
-diff --git a/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h b/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h
-index 9a21c23666..86413d1577 100644
---- a/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h
-+++ b/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h
-@@ -19,7 +19,7 @@
- #include "paddle/phi/kernels/conv_transpose_grad_kernel.h"
- #include "paddle/phi/kernels/cpu/conv_util.h"
- #include "paddle/phi/kernels/full_kernel.h"
--#include "paddle/phi/kernels/funcs/blas/blas.h"
-+#include "kernels/funcs/blas/blas.h"
- #include "paddle/phi/kernels/funcs/concat_and_split_functor.h"
- #include "paddle/phi/kernels/funcs/im2col.h"
- #include "paddle/phi/kernels/funcs/slice.h"
