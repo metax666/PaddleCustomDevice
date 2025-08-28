@@ -404,7 +404,6 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/radam_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/random_routing_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/renorm_grad_kernel.cu
-  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/rmsprop_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/scale_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/randperm_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/reduce_as_grad_kernel.cu
@@ -484,6 +483,10 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/index_add_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/bce_loss_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/bce_loss_grad_kernel.cu
+  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/meshgrid_kernel.cu.cc
+  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/meshgrid_grad_kernel.cu.cc
+  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/pad3d_grad_kernel.cu
+  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/pad3d_kernel.cu
   # ############################################################################
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/array_grad_kernel.cc
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/set_kernel.cc

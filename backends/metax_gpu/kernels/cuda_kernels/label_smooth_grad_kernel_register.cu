@@ -13,20 +13,13 @@
 // limitations under the License.
 
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/gpu/rmsprop_kernel.cu"  // NOLINT
+#include "paddle/phi/kernels/gpu/label_smooth_grad_kernel.cu"  // NOLINT
 
-PD_CUSTOM_KERNEL_REGISTER(rmsprop,
+PD_CUSTOM_KERNEL_REGISTER(label_smooth_grad,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::RmspropDenseKernel,
+                          phi::LabelSmoothGradKernel,
                           float,
                           double,
-                          phi::dtype::float16) {}
-
-PD_CUSTOM_KERNEL_REGISTER(rmsprop_dense_param_sparse_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::RmspropSparseKernel,
-                          float,
-                          double,
-                          phi::dtype::float16) {}
+                          phi::dtype::float16,
+                          phi::dtype::bfloat16) {}

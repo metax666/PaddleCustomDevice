@@ -1,4 +1,4 @@
-// Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
+// Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "paddle/phi/backends/gpu/gpu_context.h"
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/gpu/rmsprop_kernel.cu"  // NOLINT
+#include "paddle/phi/kernels/impl/meshgrid_grad_kernel_impl.h"
+#include "paddle/phi/kernels/meshgrid_grad_kernel.h"
 
-PD_CUSTOM_KERNEL_REGISTER(rmsprop,
+PD_CUSTOM_KERNEL_REGISTER(meshgrid_grad,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::RmspropDenseKernel,
+                          phi::MeshgridGradKernel,
+                          phi::dtype::float16,
                           float,
                           double,
-                          phi::dtype::float16) {}
-
-PD_CUSTOM_KERNEL_REGISTER(rmsprop_dense_param_sparse_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::RmspropSparseKernel,
-                          float,
-                          double,
-                          phi::dtype::float16) {}
+                          int,
+                          int64_t,
+                          phi::dtype::bfloat16,
+                          phi::dtype::complex<float>,
+                          phi::dtype::complex<double>) {}

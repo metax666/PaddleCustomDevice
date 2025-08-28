@@ -13,20 +13,29 @@
 // limitations under the License.
 
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/gpu/rmsprop_kernel.cu"  // NOLINT
+#include "paddle/phi/kernels/gpu/group_norm_kernel.cu"  // NOLINT
 
-PD_CUSTOM_KERNEL_REGISTER(rmsprop,
+PD_CUSTOM_KERNEL_REGISTER(group_norm,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::RmspropDenseKernel,
+                          phi::GroupNormKernel,
                           float,
                           double,
-                          phi::dtype::float16) {}
+                          phi::dtype::bfloat16,
+                          phi::dtype::float16) {
+  if (kernel_key.dtype() == phi::DataType::BFLOAT16 ||
+      kernel_key.dtype() == phi::DataType::FLOAT16) {
+    kernel->OutputAt(1).SetDataType(phi::DataType::FLOAT32);
+    kernel->OutputAt(2).SetDataType(phi::DataType::FLOAT32);
+  }
+}
 
-PD_CUSTOM_KERNEL_REGISTER(rmsprop_dense_param_sparse_grad,
+PD_CUSTOM_KERNEL_REGISTER(add_group_norm_silu,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::RmspropSparseKernel,
-                          float,
-                          double,
-                          phi::dtype::float16) {}
+                          phi::GroupNormNDHWCKernel,
+                          phi::dtype::bfloat16,
+                          phi::dtype::float16) {
+  kernel->OutputAt(2).SetDataType(phi::DataType::FLOAT32);
+  kernel->OutputAt(3).SetDataType(phi::DataType::FLOAT32);
+}
