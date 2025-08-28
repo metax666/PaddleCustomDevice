@@ -102,6 +102,45 @@ inline void InitDnnHandle(cudnnHandle_t* handle,
 }
 }  // namespace
 
+namespace dynload {
+
+inline bool HasCUSOLVER() {
+  std::call_once(cusolver_dso_flag,
+                 []() { cusolver_dso_handle = GetCusolverDsoHandle(); });
+  return cusolver_dso_handle != nullptr;
+}
+
+}  // namespace dynload
+
+inline static cusolverDnHandle_t cusolver_dn_handle_ = nullptr;
+inline std::once_flag flag_cusolver_dn_;
+
+inline void InitCusolverDnHandle(cusolverDnHandle_t* handle,
+                                 gpuStream_t stream,
+                                 Place place) {
+  if (phi::dynload::HasCUSOLVER()) {
+    // auto version = phi::dynload::cusolverDnGetVersion();
+    PADDLE_RETRY_CUDA_SUCCESS(phi::dynload::cusolverDnCreate(handle));
+    PADDLE_RETRY_CUDA_SUCCESS(
+        phi::dynload::cusolverDnSetStream(*handle, stream));
+  } else {
+    *handle = nullptr;
+  }
+}
+
+inline cusolverDnHandle_t GetCusolverDnHandle(gpuStream_t stream, Place place) {
+  std::call_once(flag_cusolver_dn_, [&]() {
+    if (!cusolver_dn_handle_) {
+      InitCusolverDnHandle(&cusolver_dn_handle_, stream, place);
+    }
+  });
+  PADDLE_ENFORCE_NOT_NULL(
+      cusolver_dn_handle_,
+      common::errors::InvalidArgument(
+          "cusolverDn handle is null. Check device initialization."));
+  return cusolver_dn_handle_;
+}
+
 inline cudnnHandle_t GetDnnHandle(gpuStream_t stream, GPUPlace place) {
   std::call_once(flag_dnn_, [&]() {
     if (!dnn_handle_) {
