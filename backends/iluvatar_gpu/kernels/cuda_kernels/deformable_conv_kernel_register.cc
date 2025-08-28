@@ -1,4 +1,4 @@
-// Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
+// Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,14 +13,10 @@
 // limitations under the License.
 
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/impl/qr_kernel_impl.h"
-#include "paddle/phi/kernels/qr_kernel.h"
+#include "paddle/phi/kernels/impl/deformable_conv_kernel_impl.h"
 
-PD_CUSTOM_KERNEL_REGISTER(qr,
-                          metax_gpu,
+PD_CUSTOM_KERNEL_REGISTER(deformable_conv,
+                          iluvatar_gpu,
                           ALL_LAYOUT,
-                          phi::QrKernel,
-                          float,
-                          double,
-                          phi::dtype::complex<float>,
-                          phi::dtype::complex<double>) {}
+                          phi::DeformableConvKernel,
+                          float) {}

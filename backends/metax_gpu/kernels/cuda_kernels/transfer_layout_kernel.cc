@@ -12,14 +12,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. */
 
-#include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/addmm_kernel.h"
-#include "paddle/phi/kernels/impl/addmm_kernel_impl.h"
+#include "paddle/phi/kernels/transfer_layout_kernel.h"
 
-PD_CUSTOM_KERNEL_REGISTER(addmm,
-                          iluvatar_gpu,
-                          ALL_LAYOUT,
-                          phi::AddmmKernel,
-                          float,
-                          phi::dtype::float16,
-                          phi::dtype::bfloat16) {}
+#include "paddle/phi/core/kernel_registry.h"
+PD_CUSTOM_KERNEL_REGISTER_FOR_ALL_DTYPE(transfer_layout,
+                                        metax_gpu,
+                                        ALL_LAYOUT,
+                                        phi::TransferLayoutKernel) {}

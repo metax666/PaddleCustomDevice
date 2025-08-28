@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "./conv_gpudnn.h"
 #include "glog/logging.h"
-#include "kernels/gpudnn/conv_gpudnn.h"
 #include "paddle/phi/backends/context_pool.h"
 #include "paddle/phi/backends/gpu/gpu_context.h"
 #include "paddle/phi/core/dense_tensor.h"
@@ -22,7 +22,7 @@
 #ifdef PADDLE_WITH_HIP
 #include "paddle/phi/kernels/gpudnn/conv_miopen_helper.h"
 #else
-#include "kernels/gpudnn/conv_cudnn_v7.h"
+#include "./conv_cudnn_v7.h"
 #endif
 
 #include "kernels/impl/conv_cudnn_impl.h"
@@ -68,11 +68,10 @@ void ConvCudnnGradKernelImplV7(
   T* input_grad_data = nullptr;
   T* transformed_input_grad_data = nullptr;
 
-  //   auto handle = dev_ctx.cudnn_handle();
   auto handle = GetDnnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
-  //   auto workspace_handle = dev_ctx.cudnn_workspace_handle();
   auto workspace_handle = GetDnnWorkspace(
       const_cast<Allocator*>(&(dev_ctx.GetAllocator())), dev_ctx.stream());
+
   auto dtype = phi::backends::gpu::CudnnDataType<T>::type;
   auto layout_tensor = phi::backends::gpu::GetCudnnTensorFormat(layout);
 
@@ -161,7 +160,12 @@ void ConvCudnnGradKernelImplV7(
     args1.idesc.set(*transformed_input_grad, layout_tensor);
     args1.wdesc.set(*transformed_filter_channel, layout_tensor, iwo_groups);
     args1.odesc.set(*transformed_output_grad_channel, layout_tensor);
-    args1.cdesc.set(dtype, padding_common, strides, dilations, true, c_groups);
+    args1.cdesc.set(dtype,
+                    padding_common,
+                    strides,
+                    dilations,
+                    phi::AllowTF32Cudnn(),
+                    c_groups);
 
 #ifdef PADDLE_WITH_HIP
     using search1 = SearchAlgorithm<miopenConvBwdDataAlgorithm_t>;
@@ -184,7 +188,12 @@ void ConvCudnnGradKernelImplV7(
     args2.wdesc.set(
         *transformed_filter_grad_channel, layout_tensor, iwo_groups);
     args2.odesc.set(*transformed_output_grad_channel, layout_tensor);
-    args2.cdesc.set(dtype, padding_common, strides, dilations, true, c_groups);
+    args2.cdesc.set(dtype,
+                    padding_common,
+                    strides,
+                    dilations,
+                    phi::AllowTF32Cudnn(),
+                    c_groups);
 #ifdef PADDLE_WITH_HIP
     using search2 = SearchAlgorithm<miopenConvBwdWeightsAlgorithm_t>;
     workspace_size = std::max(workspace_size, search2::GetWorkspaceSize(args2));
@@ -353,11 +362,9 @@ void ConvCudnnGradKernelImplV8(
       common::errors::Unimplemented(
           "Group concolution using CUDNNv8 API is unsupported for now"));
 
-  cudnnHandle_t handle = const_cast<cudnnHandle_t>(
-      GetDnnHandle(dev_ctx.stream(), dev_ctx.GetPlace()););
-  //   auto workspace_handle = dev_ctx.cudnn_workspace_handle();
-  auto workspace_handle = GetDnnWorkspace(
-      const_cast<Allocator*>(&(dev_ctx.GetAllocator())), dev_ctx.stream());
+  cudnnHandle_t handle = const_cast<cudnnHandle_t>(dev_ctx.cudnn_handle());
+  auto workspace_handle = dev_ctx.cudnn_workspace_handle();
+
   auto dtype = phi::backends::gpu::CudnnDataType<T>::type;
   auto layout_format = phi::backends::gpu::GetCudnnTensorFormat(layout);
 
@@ -427,28 +434,27 @@ void ConvCudnnGradKernel(const Context& dev_ctx,
     dev_ctx.template Alloc<T>(filter_grad);
   }
 
-  //   bool has_use_addto = dev_ctx.HasDnnAttr("use_addto");
-  bool has_use_addto = "true";
-  VLOG(4) << "GPUContext contains `use_addto`: " << has_use_addto;
-  //   bool use_addto = has_use_addto
-  //                        ? PADDLE_GET_CONST(bool, "true")
-  //                        : false;
-  bool use_addto = "true";
+  // bool has_use_addto = dev_ctx.HasDnnAttr("use_addto");
+  // VLOG(4) << "GPUContext contains `use_addto`: " << has_use_addto;
+  // bool use_addto = has_use_addto
+  //                      ? PADDLE_GET_CONST(bool,
+  //                      dev_ctx.GetDnnAttr("use_addto")) : false;
+  bool use_addto = false;
+
   std::vector<int> dilations = dilations_t;
   std::vector<int> strides = strides_t;
   std::vector<int> paddings = paddings_t;
 
-  //   bool has_exhaustive_search = dev_ctx.HasDnnAttr("exhaustive_search");
-  bool has_exhaustive_search = "true";
-  VLOG(4) << "GPUContext contains `exhaustive_search`: "
-          << has_exhaustive_search;
-  //   bool exhaustive_search_attr =
-  //       has_exhaustive_search
-  //           ? PADDLE_GET_CONST(bool, "true")
-  //           : false;
-  bool exhaustive_search_attr = "true";
-  bool exhaustive_search =
-      FLAGS_cudnn_exhaustive_search || exhaustive_search_attr;
+  // bool has_exhaustive_search = dev_ctx.HasDnnAttr("exhaustive_search");
+  // VLOG(4) << "GPUContext contains `exhaustive_search`: "
+  //         << has_exhaustive_search;
+  // bool exhaustive_search_attr =
+  //     has_exhaustive_search
+  //         ? PADDLE_GET_CONST(bool, dev_ctx.GetDnnAttr("exhaustive_search"))
+  //         : false;
+  // bool exhaustive_search =
+  //     FLAGS_cudnn_exhaustive_search || exhaustive_search_attr;
+  bool exhaustive_search = FLAGS_cudnn_exhaustive_search;
   bool deterministic = FLAGS_cudnn_deterministic;
   auto exhaustive_deterministic = exhaustive_search && deterministic;
   PADDLE_ENFORCE_EQ(exhaustive_deterministic,
@@ -825,16 +831,16 @@ void ConvCudnnGradGradKernel(
   T* transformed_dx = nullptr;
   std::vector<int> dilations = dilations_t;
 
-  //   bool has_exhaustive_search = dev_ctx.HasDnnAttr("exhaustive_search");
-  //   VLOG(4) << "GPUContext contains `exhaustive_search`: "
-  //           << has_exhaustive_search;
-  //   bool exhaustive_search_attr =
-  //       has_exhaustive_search
-  //           ? PADDLE_GET_CONST(bool, dev_ctx.GetDnnAttr("exhaustive_search"))
-  //           : false;
-  bool exhaustive_search_attr = "true";
-  bool exhaustive_search =
-      FLAGS_cudnn_exhaustive_search || exhaustive_search_attr;
+  // bool has_exhaustive_search = dev_ctx.HasDnnAttr("exhaustive_search");
+  // VLOG(4) << "GPUContext contains `exhaustive_search`: "
+  //         << has_exhaustive_search;
+  // bool exhaustive_search_attr =
+  //     has_exhaustive_search
+  //         ? PADDLE_GET_CONST(bool, dev_ctx.GetDnnAttr("exhaustive_search"))
+  //         : false;
+  // bool exhaustive_search =
+  //     FLAGS_cudnn_exhaustive_search || exhaustive_search_attr;
+  bool exhaustive_search = FLAGS_cudnn_exhaustive_search;
   bool deterministic = FLAGS_cudnn_deterministic;
   auto exhaustive_deterministic = exhaustive_search && deterministic;
   PADDLE_ENFORCE_EQ(exhaustive_deterministic,
@@ -1004,7 +1010,6 @@ void ConvCudnnGradGradKernel(
 #endif
   auto dtype = phi::backends::gpu::CudnnDataType<T>::type;
 
-  //   auto handle = dev_ctx.cudnn_handle();
   auto handle = GetDnnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
   auto layout = phi::backends::gpu::GetCudnnTensorFormat(
       phi::backends::gpu::DataLayout::kNCHW);
@@ -1073,7 +1078,12 @@ void ConvCudnnGradGradKernel(
       args1.idesc.set(transformed_ddX, iwo_group);
       args1.wdesc.set(*W, layout, iwo_group);
       args1.odesc.set(transformed_ddO_channel, iwo_group);
-      args1.cdesc.set(dtype, padding_common, strides, dilations, true, c_group);
+      args1.cdesc.set(dtype,
+                      padding_common,
+                      strides,
+                      dilations,
+                      phi::AllowTF32Cudnn(),
+                      c_group);
 
 #ifdef PADDLE_WITH_HIP
       using search1 = SearchAlgorithm<miopenConvFwdAlgorithm_t>;
@@ -1092,7 +1102,12 @@ void ConvCudnnGradGradKernel(
       args2.idesc.set(transformed_X, iwo_group);
       args2.wdesc.set(*ddW, layout, iwo_group);
       args2.odesc.set(transformed_ddO_channel, iwo_group);
-      args2.cdesc.set(dtype, padding_common, strides, dilations, true, c_group);
+      args2.cdesc.set(dtype,
+                      padding_common,
+                      strides,
+                      dilations,
+                      phi::AllowTF32Cudnn(),
+                      c_group);
 
 #ifdef PADDLE_WITH_HIP
       using search2 = SearchAlgorithm<miopenConvFwdAlgorithm_t>;
@@ -1114,7 +1129,12 @@ void ConvCudnnGradGradKernel(
     args3.idesc.set(transformed_ddX, iwo_group);
     args3.wdesc.set(*dW, layout, iwo_group);
     args3.odesc.set(transformed_dO_channel, iwo_group);
-    args3.cdesc.set(dtype, padding_common, strides, dilations, true, c_group);
+    args3.cdesc.set(dtype,
+                    padding_common,
+                    strides,
+                    dilations,
+                    phi::AllowTF32Cudnn(),
+                    c_group);
 
 #ifdef PADDLE_WITH_HIP
     using search3 = SearchAlgorithm<miopenConvBwdWeightsAlgorithm_t>;
@@ -1136,7 +1156,12 @@ void ConvCudnnGradGradKernel(
     args4.idesc.set(transformed_dX, iwo_group);
     args4.wdesc.set(*ddW, layout, iwo_group);
     args4.odesc.set(transformed_dO_channel, iwo_group);
-    args4.cdesc.set(dtype, padding_common, strides, dilations, true, c_group);
+    args4.cdesc.set(dtype,
+                    padding_common,
+                    strides,
+                    dilations,
+                    phi::AllowTF32Cudnn(),
+                    c_group);
 
 #ifdef PADDLE_WITH_HIP
     using search4 = SearchAlgorithm<miopenConvBwdDataAlgorithm_t>;
@@ -1177,7 +1202,6 @@ void ConvCudnnGradGradKernel(
   // 0.0f;
   // VLOG(4) << "Conv_grad_grad: use_addto = " <<
   // dev_ctx.Attr<bool>("use_addto");
-  //   auto workspace_handle = dev_ctx.cudnn_workspace_handle();
   auto workspace_handle = GetDnnWorkspace(
       const_cast<Allocator*>(&(dev_ctx.GetAllocator())), dev_ctx.stream());
 
@@ -1431,125 +1455,42 @@ void Conv3DCudnnDoubleGradKernel(
 
 }  // namespace phi
 
-#ifdef PADDLE_WITH_HIP
 PD_REGISTER_PLUGIN_KERNEL(conv2d_grad,
-                          metax_gpu,
+                          iluvatar_gpu,
                           ALL_LAYOUT,
                           phi::ConvCudnnGradKernel,
                           float,
-                          phi::dtype::float16) {}
-
-PD_REGISTER_PLUGIN_KERNEL(conv3d_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::Conv3DCudnnGradKernel,
-                          float,
-                          phi::dtype::float16) {}
-PD_REGISTER_PLUGIN_KERNEL(conv2d_double_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::ConvCudnnGradGradKernel,
-                          float,
-                          phi::dtype::float16) {}
-
-PD_REGISTER_PLUGIN_KERNEL(conv3d_double_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::Conv3DCudnnDoubleGradKernel,
-                          float,
-                          phi::dtype::float16) {}
-
-PD_REGISTER_PLUGIN_KERNEL(depthwise_conv2d_double_grad,
-                          GPU,
-                          ALL_LAYOUT,
-                          phi::DepthwiseConvDoubleGradGPUDNNKernel,
-                          float,
-                          phi::dtype::float16) {}
-#else
-#if CUDNN_VERSION_MIN(8, 1, 0)
-PD_REGISTER_PLUGIN_KERNEL(conv2d_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::ConvCudnnGradKernel,
-                          float,
-                          double,
                           phi::dtype::float16,
                           phi::dtype::bfloat16) {}
 
 PD_REGISTER_PLUGIN_KERNEL(conv3d_grad,
-                          metax_gpu,
+                          iluvatar_gpu,
                           ALL_LAYOUT,
                           phi::Conv3DCudnnGradKernel,
                           float,
-                          double,
                           phi::dtype::float16,
                           phi::dtype::bfloat16) {}
+
 PD_REGISTER_PLUGIN_KERNEL(conv2d_double_grad,
-                          metax_gpu,
+                          iluvatar_gpu,
                           ALL_LAYOUT,
                           phi::ConvCudnnGradGradKernel,
                           float,
-                          double,
                           phi::dtype::float16,
                           phi::dtype::bfloat16) {}
 
 PD_REGISTER_PLUGIN_KERNEL(conv3d_double_grad,
-                          metax_gpu,
+                          iluvatar_gpu,
                           ALL_LAYOUT,
                           phi::Conv3DCudnnDoubleGradKernel,
                           float,
-                          double,
                           phi::dtype::float16,
                           phi::dtype::bfloat16) {}
 
 PD_REGISTER_PLUGIN_KERNEL(depthwise_conv2d_double_grad,
-                          metax_gpu,
+                          iluvatar_gpu,
                           ALL_LAYOUT,
                           phi::DepthwiseConvDoubleGradGPUDNNKernel,
                           float,
-                          double,
                           phi::dtype::float16,
                           phi::dtype::bfloat16) {}
-#else
-PD_REGISTER_PLUGIN_KERNEL(conv2d_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::ConvCudnnGradKernel,
-                          float,
-                          double,
-                          phi::dtype::float16) {}
-
-PD_REGISTER_PLUGIN_KERNEL(conv3d_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::Conv3DCudnnGradKernel,
-                          float,
-                          double,
-                          phi::dtype::float16) {}
-
-PD_REGISTER_PLUGIN_KERNEL(conv2d_double_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::ConvCudnnGradGradKernel,
-                          float,
-                          double,
-                          phi::dtype::float16) {}
-
-PD_REGISTER_PLUGIN_KERNEL(conv3d_double_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::Conv3DCudnnDoubleGradKernel,
-                          float,
-                          double,
-                          phi::dtype::float16) {}
-
-PD_REGISTER_PLUGIN_KERNEL(depthwise_conv2d_double_grad,
-                          metax_gpu,
-                          ALL_LAYOUT,
-                          phi::DepthwiseConvDoubleGradGPUDNNKernel,
-                          float,
-                          double,
-                          phi::dtype::float16) {}
-#endif
-
-#endif
