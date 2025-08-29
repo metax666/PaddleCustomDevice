@@ -14,7 +14,7 @@
 #include "kernels/impl/lu_grad_kernel_impl.h"
 #include "paddle/phi/backends/gpu/gpu_context.h"
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/core/tensor_utils.h"
+#include "paddle/phi/core/tensor_utils.h"  //NOLINT
 #include "paddle/phi/kernels/lu_grad_kernel.h"
 
 PD_REGISTER_PLUGIN_KERNEL(lu_grad,
