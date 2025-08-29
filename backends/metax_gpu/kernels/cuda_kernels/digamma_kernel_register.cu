@@ -13,14 +13,13 @@
 // limitations under the License.
 
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/impl/qr_kernel_impl.h"
-#include "paddle/phi/kernels/qr_kernel.h"
+#include "paddle/phi/kernels/digamma_kernel.h"
 
-PD_CUSTOM_KERNEL_REGISTER(qr,
+PD_CUSTOM_KERNEL_REGISTER(digamma,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::QrKernel,
+                          phi::DigammaKernel,
                           float,
                           double,
-                          phi::dtype::complex<float>,
-                          phi::dtype::complex<double>) {}
+                          phi::dtype::float16,
+                          phi::dtype::bfloat16) {}
