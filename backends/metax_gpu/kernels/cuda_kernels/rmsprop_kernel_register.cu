@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "paddle/phi/backends/gpu/gpu_context.h"
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/impl/rmsprop_kernel_impl.h"
-#include "paddle/phi/kernels/rmsprop_kernel.h"
+#include "paddle/phi/kernels/gpu/rmsprop_kernel.cu"  // NOLINT
 
 PD_CUSTOM_KERNEL_REGISTER(rmsprop,
                           metax_gpu,

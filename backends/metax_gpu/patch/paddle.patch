@@ -354,7 +354,7 @@ index 4ff2e528a9..81421c8ca1 100644
  
    for (int offset = warpSize / 2; offset > 0; offset /= 2)
 diff --git a/paddle/phi/core/enforce.h b/paddle/phi/core/enforce.h
-index 95f1d58c64..c4c66edc08 100644
+index 95f1d58c64..667064f341 100644
 --- a/paddle/phi/core/enforce.h
 +++ b/paddle/phi/core/enforce.h
 @@ -45,7 +45,9 @@ limitations under the License. */
@@ -451,6 +451,38 @@ index bdfd7313af..546bd07d5e 100644
 +// #include "paddle/phi/kernels/funcs/blas/blaslt_impl.cu.h"
  #include "paddle/phi/kernels/funcs/quant_dequant.h"
  #include "paddle/phi/kernels/matmul_kernel.h"
+ 
+diff --git a/paddle/phi/kernels/funcs/matrix_inverse.cu b/paddle/phi/kernels/funcs/matrix_inverse.cu
+index 1a9a9cfb85..08ebe4b8af 100644
+--- a/paddle/phi/kernels/funcs/matrix_inverse.cu
++++ b/paddle/phi/kernels/funcs/matrix_inverse.cu
+@@ -15,11 +15,13 @@ limitations under the License. */
+ #include "paddle/phi/kernels/funcs/matrix_inverse.h"
+ 
+ #include "paddle/phi/common/memory_utils.h"
+-#include "paddle/phi/kernels/funcs/blas/blas.h"
++#include "kernels/funcs/blas/blas.h"
+ 
+ namespace phi {
+ namespace funcs {
+ 
++
++
+ template <typename Context, typename T>
+ void MatrixInverseFunctor<Context, T>::operator()(const Context& dev_ctx,
+                                                   const DenseTensor& a,
+diff --git a/paddle/phi/kernels/funcs/matrix_solve.cu b/paddle/phi/kernels/funcs/matrix_solve.cu
+index 558d363b39..05da04b517 100644
+--- a/paddle/phi/kernels/funcs/matrix_solve.cu
++++ b/paddle/phi/kernels/funcs/matrix_solve.cu
+@@ -16,7 +16,7 @@ limitations under the License. */
+ #include "paddle/phi/backends/gpu/cuda/cudnn_workspace_helper.h"
+ #include "paddle/phi/common/memory_utils.h"
+ #include "paddle/phi/core/tensor_utils.h"
+-#include "paddle/phi/kernels/funcs/blas/blas.h"
++#include "kernels/funcs/blas/blas.h"
+ #include "paddle/phi/kernels/funcs/math_function.h"
+ #include "paddle/phi/kernels/funcs/scatter.cu.h"
  
 diff --git a/paddle/phi/kernels/funcs/top_k_function_cuda.h b/paddle/phi/kernels/funcs/top_k_function_cuda.h
 index dc7935423c..84896c2214 100644
@@ -815,6 +847,45 @@ index 29fa252e96..4ae72b0935 100644
    return tanhf(x);
  }
  
+diff --git a/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu b/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
+index ee71a2b452..69130ab955 100644
+--- a/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
++++ b/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
+@@ -17,7 +17,7 @@
+ #include "paddle/phi/backends/gpu/gpu_context.h"
+ #include "paddle/phi/core/kernel_registry.h"
+ #include "paddle/phi/kernels/funcs/math_function.h"
+-#include "paddle/phi/kernels/gpudnn/softmax_gpudnn.h"
++#include "kernels/gpudnn/softmax_gpudnn.h"
+ 
+ namespace phi {
+ 
+diff --git a/paddle/phi/kernels/gpu/log_softmax_kernel.cu b/paddle/phi/kernels/gpu/log_softmax_kernel.cu
+index 00a2f1e210..1267cf7ec2 100644
+--- a/paddle/phi/kernels/gpu/log_softmax_kernel.cu
++++ b/paddle/phi/kernels/gpu/log_softmax_kernel.cu
+@@ -17,7 +17,7 @@
+ #include "paddle/phi/backends/gpu/gpu_context.h"
+ #include "paddle/phi/core/kernel_registry.h"
+ #include "paddle/phi/kernels/funcs/math_function.h"
+-#include "paddle/phi/kernels/gpudnn/softmax_gpudnn.h"
++#include "kernels/gpudnn/softmax_gpudnn.h"
+ 
+ namespace phi {
+ 
+diff --git a/paddle/phi/kernels/gpu/lstsq_kernel.cu b/paddle/phi/kernels/gpu/lstsq_kernel.cu
+index 1bdbe1564c..f753b54bc6 100644
+--- a/paddle/phi/kernels/gpu/lstsq_kernel.cu
++++ b/paddle/phi/kernels/gpu/lstsq_kernel.cu
+@@ -21,7 +21,7 @@
+ #include "paddle/phi/core/kernel_registry.h"
+ #include "paddle/phi/kernels/full_kernel.h"
+ #include "paddle/phi/kernels/funcs/slice.h"
+-#include "paddle/phi/kernels/impl/lstsq_kernel_impl.h"
++#include "kernels/impl/lstsq_kernel_impl.h"
+ #include "paddle/phi/kernels/impl/qr_kernel_impl.h"
+ #include "paddle/phi/kernels/impl/tril_triu_kernel_impl.h"
+ #include "paddle/phi/kernels/lstsq_kernel.h"
 diff --git a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h b/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
 index 14b24dd3ed..e54a342c98 100644
 --- a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
@@ -841,6 +912,19 @@ index 06fff0dd58..973049105f 100644
  #include "paddle/phi/kernels/funcs/eigen/common.h"
  #include "paddle/phi/kernels/funcs/eigen/eigen_function.h"
  #include "paddle/phi/kernels/funcs/for_range.h"
+diff --git a/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h b/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h
+index 9a21c23666..86413d1577 100644
+--- a/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h
++++ b/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h
+@@ -19,7 +19,7 @@
+ #include "paddle/phi/kernels/conv_transpose_grad_kernel.h"
+ #include "paddle/phi/kernels/cpu/conv_util.h"
+ #include "paddle/phi/kernels/full_kernel.h"
+-#include "paddle/phi/kernels/funcs/blas/blas.h"
++#include "kernels/funcs/blas/blas.h"
+ #include "paddle/phi/kernels/funcs/concat_and_split_functor.h"
+ #include "paddle/phi/kernels/funcs/im2col.h"
+ #include "paddle/phi/kernels/funcs/slice.h"
 diff --git a/paddle/phi/kernels/impl/deformable_conv_grad_kernel_impl.h b/paddle/phi/kernels/impl/deformable_conv_grad_kernel_impl.h
 index 4459a931da..837c8682b8 100644
 --- a/paddle/phi/kernels/impl/deformable_conv_grad_kernel_impl.h
@@ -907,16 +991,22 @@ index 5ebbc8d2db..48acf8d0cd 100644
      helper->GEMM(quant_input.data<int8_t>(),
                   weight->data<int8_t>(),
                   int_out.data<int32_t>(),
-diff --git a/third_party/cutlass b/third_party/cutlass
-index eefa171318..66d9cddc83 160000
---- a/third_party/cutlass
-+++ b/third_party/cutlass
-@@ -1 +1 @@
--Subproject commit eefa171318b79cbe2e78514d4cce5cd0fe919d0c
-+Subproject commit 66d9cddc832c1cdc2b30a8755274f7f74640cfe6
 diff --git a/third_party/yaml-cpp b/third_party/yaml-cpp
 --- a/third_party/yaml-cpp
 +++ b/third_party/yaml-cpp
 @@ -1 +1 @@
 -Subproject commit 1d8ca1f35eb3a9c9142462b28282a848e5d29a91
 +Subproject commit 1d8ca1f35eb3a9c9142462b28282a848e5d29a91-dirty
+diff --git a/paddle/phi/kernels/impl/baddbmm_kernel_impl.h b/paddle/phi/kernels/impl/baddbmm_kernel_impl.h
+index 2789cb59a2..b91b076f7f 100644
+--- a/paddle/phi/kernels/impl/baddbmm_kernel_impl.h
++++ b/paddle/phi/kernels/impl/baddbmm_kernel_impl.h
+@@ -20,7 +20,7 @@ limitations under the License. */
+ 
+ #include "paddle/phi/common/amp_type_traits.h"
+ #include "paddle/phi/kernels/baddbmm_kernel.h"
+-#include "paddle/phi/kernels/funcs/blas/blas.h"
++#include "kernels/funcs/blas/blas.h"
+ #include "paddle/phi/kernels/funcs/eigen/common.h"
+ #include "paddle/phi/kernels/funcs/eigen/eigen_function.h"
+ 

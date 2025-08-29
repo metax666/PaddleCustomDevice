@@ -12,24 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// #include "paddle/phi/kernels/log_softmax_grad_kernel.h"
-// #include "paddle/phi/core/kernel_registry.h"
+#include "paddle/phi/core/kernel_registry.h"
+#include "paddle/phi/kernels/log_softmax_grad_kernel.h"
 // #include "paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu"
-// #ifdef PADDLE_WITH_HIP
-// PD_CUSTOM_KERNEL_REGISTER(log_softmax_grad,
-//                    metax_gpu,
-//                    ALL_LAYOUT,
-//                    phi::LogSoftmaxGradKernel,
-//                    float,
-//                    phi::dtype::float16,
-//                    phi::dtype::bfloat16) {}
-// #else
-// PD_CUSTOM_KERNEL_REGISTER(log_softmax_grad,
-//                    GPmetax_gpuU,
-//                    ALL_LAYOUT,
-//                    phi::LogSoftmaxGradKernel,
-//                    float,
-//                    double,
-//                    phi::dtype::float16,
-//                    phi::dtype::bfloat16) {}
-// #endif
+
+PD_CUSTOM_KERNEL_REGISTER(log_softmax_grad,
+                          metax_gpu,
+                          ALL_LAYOUT,
+                          phi::LogSoftmaxGradKernel,
+                          float,
+                          double,
+                          phi::dtype::float16,
+                          phi::dtype::bfloat16) {}
