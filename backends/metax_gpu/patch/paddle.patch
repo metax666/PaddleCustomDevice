@@ -326,7 +326,11 @@ index 4ff2e528a9..81421c8ca1 100644
  
    for (int offset = warpSize / 2; offset > 0; offset /= 2)
 diff --git a/paddle/phi/core/enforce.h b/paddle/phi/core/enforce.h
+<<<<<<< HEAD
 index 024a7de73e..1e4cdf16be 100644
+=======
+index 95f1d58c64..c4c66edc08 100644
+>>>>>>> 46e00a61 ([fix] fix some test case due to missing op register)
 --- a/paddle/phi/core/enforce.h
 +++ b/paddle/phi/core/enforce.h
 @@ -45,7 +45,9 @@ limitations under the License. */
@@ -1028,6 +1032,7 @@ index 6f03f76eeb..5fe2c3e7dc 100644
  #include "paddle/phi/kernels/funcs/for_range.h"
  #include "paddle/phi/kernels/funcs/matrix_inverse.h"
  
+<<<<<<< HEAD
 diff --git a/third_party/flagcx b/third_party/flagcx
 index 77495cd6a8..7e6c4cc3ca 160000
 --- a/third_party/flagcx
@@ -1035,6 +1040,8 @@ index 77495cd6a8..7e6c4cc3ca 160000
 @@ -1 +1 @@
 -Subproject commit 77495cd6a84b1c8f88dd8f6f99e63ef3c84c766f
 +Subproject commit 7e6c4cc3cad3fce9b3dedfe46a9d195d616e8ffa
+=======
+>>>>>>> 46e00a61 ([fix] fix some test case due to missing op register)
 diff --git a/third_party/flashattn b/third_party/flashattn
 index 581e48aa69..749aca3807 160000
 --- a/third_party/flashattn
