@@ -13,20 +13,19 @@
 // limitations under the License.
 
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/squeeze_grad_kernel.h"
+#include "paddle/phi/kernels/linspace_kernel.h"
 
-PD_CUSTOM_KERNEL_REGISTER(squeeze_grad,
+PD_CUSTOM_KERNEL_REGISTER(linspace,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::SqueezeGradKernel,
+                          phi::LinspaceKernel,
                           float,
+                          int32_t,
+                          int64_t,
                           double,
                           phi::dtype::float16,
-                          phi::dtype::bfloat16,
-                          bool,
-                          int,
-                          uint8_t,
-                          int8_t,
-                          int16_t,
-                          int64_t,
-                          phi::dtype::complex<float>) {}
+                          phi::dtype::bfloat16) {
+  kernel->InputAt(0).SetBackend(phi::Backend::ALL_BACKEND);
+  kernel->InputAt(1).SetBackend(phi::Backend::ALL_BACKEND);
+  kernel->InputAt(2).SetBackend(phi::Backend::ALL_BACKEND);
+}

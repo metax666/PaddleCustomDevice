@@ -13,20 +13,14 @@
 // limitations under the License.
 
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/squeeze_grad_kernel.h"
+#include "paddle/phi/kernels/impl/lgamma_grad_kernel_impl.h"
+#include "paddle/phi/kernels/lgamma_grad_kernel.h"
 
-PD_CUSTOM_KERNEL_REGISTER(squeeze_grad,
+PD_CUSTOM_KERNEL_REGISTER(lgamma_grad,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::SqueezeGradKernel,
+                          phi::LgammaGradKernel,
                           float,
                           double,
                           phi::dtype::float16,
-                          phi::dtype::bfloat16,
-                          bool,
-                          int,
-                          uint8_t,
-                          int8_t,
-                          int16_t,
-                          int64_t,
-                          phi::dtype::complex<float>) {}
+                          phi::dtype::bfloat16) {}

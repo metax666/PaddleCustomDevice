@@ -1,4 +1,4 @@
-// Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+// Copyright (c) 2024 PaddlePaddle Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "kernels/impl/flatten2_kernel_impl.h"
+#include "paddle/phi/backends/gpu/gpu_context.h"
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/squeeze_grad_kernel.h"
 
-PD_CUSTOM_KERNEL_REGISTER(squeeze_grad,
+PD_REGISTER_PLUGIN_KERNEL(flatten2_grad,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::SqueezeGradKernel,
+                          phi::Flatten2GradKernel,
                           float,
                           double,
-                          phi::dtype::float16,
-                          phi::dtype::bfloat16,
-                          bool,
-                          int,
                           uint8_t,
+                          int,
                           int8_t,
-                          int16_t,
-                          int64_t,
-                          phi::dtype::complex<float>) {}
+                          int64_t) {}

@@ -1,4 +1,4 @@
-// Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
+// Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,20 +13,13 @@
 // limitations under the License.
 
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/squeeze_grad_kernel.h"
+#include "paddle/phi/kernels/gpu/psroi_pool_grad_kernel.cu"  //NOLINT
 
-PD_CUSTOM_KERNEL_REGISTER(squeeze_grad,
+PD_CUSTOM_KERNEL_REGISTER(psroi_pool_grad,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::SqueezeGradKernel,
+                          phi::PsroiPoolGradKernel,
                           float,
-                          double,
-                          phi::dtype::float16,
-                          phi::dtype::bfloat16,
-                          bool,
-                          int,
-                          uint8_t,
-                          int8_t,
-                          int16_t,
-                          int64_t,
-                          phi::dtype::complex<float>) {}
+                          double) {
+  kernel->InputAt(2).SetDataType(phi::CppTypeToDataType<int>::Type());
+}
