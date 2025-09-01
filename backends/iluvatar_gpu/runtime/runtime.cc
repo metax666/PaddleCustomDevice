@@ -15,6 +15,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <nccl.h>
+#if defined(PADDLE_WITH_FLAGCX)
+#include "runtime_flagcx.h"  // NOLINT
+#endif
 #include <semaphore.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -1023,6 +1026,9 @@ void InitPlugin(CustomRuntimeParams *params) {
          0,
          sizeof(C_DeviceInterface));
 
+#if defined(PADDLE_WITH_FLAGCX)
+  flagcxHandleInit(&flagcx_handler);
+#endif
   params->interface->get_compute_capability = GetComputeCapability;
   params->interface->get_runtime_version = GetRuntimeVersion;
   params->interface->get_driver_version = GetDriverVersion;
@@ -1073,6 +1079,22 @@ void InitPlugin(CustomRuntimeParams *params) {
   params->interface->init_eigen_device = InitEigenDevice;
   params->interface->destroy_eigen_device = DestroyEigenDevice;
 
+#if defined(PADDLE_WITH_FLAGCX)
+  params->interface->xccl_all_gather = XcclFlagcxAllGather;
+  params->interface->xccl_all_reduce = XcclFlagcxAllReduce;
+  params->interface->xccl_broadcast = XcclFlagcxBroadcast;
+  params->interface->xccl_comm_init_rank = XcclFlagcxCommInitRank;
+  params->interface->xccl_destroy_comm = XcclFlagcxDestroyComm;
+  params->interface->xccl_get_unique_id = XcclFlagcxGetUniqueId;
+  params->interface->xccl_get_unique_id_size = XcclFlagcxGetUniqueIdSize;
+  params->interface->xccl_group_end = XcclFlagcxGroupEnd;
+  params->interface->xccl_group_start = XcclFlagcxGroupStart;
+  params->interface->xccl_recv = XcclFlagcxRecv;
+  params->interface->xccl_reduce = XcclFlagcxReduce;
+  params->interface->xccl_reduce_scatter = XcclFlagcxReduceScatter;
+  params->interface->xccl_send = XcclFlagcxSend;
+  params->interface->xccl_all_to_all = XcclFlagcxAllToAll;
+#else
   params->interface->xccl_all_gather = XcclAllGather;
   params->interface->xccl_all_reduce = XcclAllReduce;
   params->interface->xccl_broadcast = XcclBroadcast;
@@ -1086,6 +1108,7 @@ void InitPlugin(CustomRuntimeParams *params) {
   params->interface->xccl_reduce = XcclReduce;
   params->interface->xccl_reduce_scatter = XcclReduceScatter;
   params->interface->xccl_send = XcclSend;
+#endif
 
   params->interface->profiler_collect_trace_data = nullptr;
   params->interface->profiler_initialize = nullptr;
