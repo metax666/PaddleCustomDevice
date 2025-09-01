@@ -1023,3 +1023,16 @@ index ad9e9197dd..5478d9817d 100644
  #include "paddle/phi/kernels/funcs/deformable_conv_functor.h"
  #include "paddle/phi/kernels/transpose_kernel.h"
  #include "paddle/utils/optional.h"
+diff --git a/paddle/phi/kernels/cpu/index_select_impl.h b/paddle/phi/kernels/cpu/index_select_impl.h
+index d69eb67d6f..1d8b6e9375 100644
+--- a/paddle/phi/kernels/cpu/index_select_impl.h
++++ b/paddle/phi/kernels/cpu/index_select_impl.h
+@@ -18,7 +18,7 @@
+ 
+ #include "paddle/phi/core/dense_tensor.h"
+ #include "paddle/phi/core/tensor_utils.h"
+-#include "paddle/phi/kernels/funcs/blas/blas.h"
++#include "kernels/funcs/blas/blas.h"
+ #include "paddle/phi/kernels/funcs/eigen/common.h"
+ #include "paddle/phi/kernels/funcs/math_function.h"
+ 
