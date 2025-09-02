@@ -33,6 +33,10 @@ include(external/eigen)
 include(external/xxhash)
 include(external/zlib)
 include(external/protobuf)
+if(WITH_FLAGCX)
+  add_definitions("-DPADDLE_WITH_FLAGCX")
+  include(external/flagcx)
+endif()
 
 set(PLUGIN_VERSION ${PADDLE_VERSION})
 set(PROTO_FILE "${PADDLE_SOURCE_DIR}/paddle/phi/core/external_error.proto")
@@ -66,8 +70,11 @@ target_include_directories(external_error_proto
 target_link_libraries(external_error_proto PUBLIC protobuf)
 set_target_properties(external_error_proto PROPERTIES POSITION_INDEPENDENT_CODE
                                                       ON)
-
-add_custom_target(external_deps DEPENDS eigen3 zlib protobuf)
+if(WITH_FLAGCX)
+  add_custom_target(external_deps DEPENDS eigen3 zlib protobuf flagcx)
+else()
+  add_custom_target(external_deps DEPENDS eigen3 zlib protobuf)
+endif()
 
 if(WITH_COREX)
   add_definitions(-DPADDLE_WITH_COREX)
@@ -247,6 +254,10 @@ file(
   kernels/ernie_core/*.cc
   kernels/gpudnn/*.cu)
 
+if(WITH_FLAGCX)
+  list(APPEND CC_SRCS runtime/runtime_flagcx.cc)
+endif()
+
 set(CUSTOM_DEVICE_SRCS ${CUDA_SRCS} ${CC_SRCS})
 
 set_source_files_properties(${CUSTOM_DEVICE_SRCS} PROPERTIES LANGUAGE CUDA)
@@ -269,7 +280,9 @@ target_link_libraries(
           protobuf
           external_error_proto
           cuinfer
-          nccl)
+          nccl
+          # change nccl to ${FLAGCX_LIB} if compiling with FlagCX ${FLAGCX_LIB}
+)
 
 include_directories(BEFORE ${PADDLE_SOURCE_DIR})
 
