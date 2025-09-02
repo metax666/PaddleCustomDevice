@@ -13,12 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License. */
 
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/gpu/matrix_power_kernel.cu"  // NOLINT
+#include "paddle/phi/kernels/gpu/matrix_power_grad_kernel.cu"  // NOLINT
 
-PD_CUSTOM_KERNEL_REGISTER(matrix_power,
+PD_CUSTOM_KERNEL_REGISTER(matrix_power_grad,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::MatrixPowerKernel,
+                          phi::MatrixPowerGradKernel,
                           float,
                           double,
                           phi::dtype::complex<float>,
