@@ -29,4 +29,5 @@ PD_CUSTOM_KERNEL_REGISTER(squeeze_grad,
                           int8_t,
                           int16_t,
                           int64_t,
-                          phi::dtype::complex<float>) {}
+                          phi::dtype::complex<float>,
+                          phi::dtype::complex<double>) {}
