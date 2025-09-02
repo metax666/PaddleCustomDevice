@@ -11,21 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/batch_norm_kernel.h"
+#include "paddle/phi/kernels/gpu/spectral_norm_grad_kernel.cu"  // NOLINT
 
-PD_CUSTOM_KERNEL_REGISTER(batch_norm_infer,
+PD_CUSTOM_KERNEL_REGISTER(spectral_norm_grad,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::BatchNormInferKernel,
+                          phi::SpectralNormGradKernel,
                           float,
-                          double,
-                          phi::dtype::bfloat16,
-                          phi::dtype::float16) {
-  if (kernel_key.dtype() == phi::DataType::FLOAT16 ||
-      kernel_key.dtype() == phi::DataType::BFLOAT16) {
-    kernel->OutputAt(1).SetDataType(phi::DataType::FLOAT32);
-    kernel->OutputAt(2).SetDataType(phi::DataType::FLOAT32);
-  }
-}
+                          double) {}
