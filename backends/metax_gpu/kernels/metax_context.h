@@ -128,6 +128,7 @@ inline void InitCusolverDnHandle(cusolverDnHandle_t* handle,
   }
 }
 
+bool AllowTF32Cudnn();
 inline cusolverDnHandle_t GetCusolverDnHandle(gpuStream_t stream, Place place) {
   std::call_once(flag_cusolver_dn_, [&]() {
     if (!cusolver_dn_handle_) {
