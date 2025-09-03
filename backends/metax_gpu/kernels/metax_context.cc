@@ -15,7 +15,6 @@
 #include "kernels/metax_context.h"
 
 namespace phi {
-bool AllowTF32Cudnn() { return false; }
 void DnnWorkspaceHandle::RunFuncSync(
     const std::function<void(void*)>& cudnn_func,
     size_t required_workspace_bytes,

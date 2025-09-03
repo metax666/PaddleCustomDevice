@@ -20,12 +20,4 @@ PD_CUSTOM_KERNEL_REGISTER(batch_norm_infer,
                           ALL_LAYOUT,
                           phi::BatchNormInferKernel,
                           float,
-                          double,
-                          phi::dtype::bfloat16,
-                          phi::dtype::float16) {
-  if (kernel_key.dtype() == phi::DataType::FLOAT16 ||
-      kernel_key.dtype() == phi::DataType::BFLOAT16) {
-    kernel->OutputAt(1).SetDataType(phi::DataType::FLOAT32);
-    kernel->OutputAt(2).SetDataType(phi::DataType::FLOAT32);
-  }
-}
+                          phi::dtype::float16) {}
