@@ -419,7 +419,7 @@ index d69eb67d6f..1d8b6e9375 100644
  #include "paddle/phi/kernels/funcs/math_function.h"
  
 diff --git a/paddle/phi/kernels/funcs/fc_functor.cu b/paddle/phi/kernels/funcs/fc_functor.cu
-index bdfd7313af..546bd07d5e 100644
+index cb35feee32..64f5bd24ac 100644
 --- a/paddle/phi/kernels/funcs/fc_functor.cu
 +++ b/paddle/phi/kernels/funcs/fc_functor.cu
 @@ -16,12 +16,12 @@ limitations under the License. */
@@ -438,7 +438,7 @@ index bdfd7313af..546bd07d5e 100644
  #include "paddle/phi/kernels/matmul_kernel.h"
  
 diff --git a/paddle/phi/kernels/funcs/matrix_inverse.cu b/paddle/phi/kernels/funcs/matrix_inverse.cu
-index 1a9a9cfb85..08ebe4b8af 100644
+index e101224970..a52eb6096f 100644
 --- a/paddle/phi/kernels/funcs/matrix_inverse.cu
 +++ b/paddle/phi/kernels/funcs/matrix_inverse.cu
 @@ -15,11 +15,13 @@ limitations under the License. */
@@ -470,10 +470,10 @@ index 558d363b39..05da04b517 100644
  #include "paddle/phi/kernels/funcs/scatter.cu.h"
  
 diff --git a/paddle/phi/kernels/funcs/top_k_function_cuda.h b/paddle/phi/kernels/funcs/top_k_function_cuda.h
-index dc7935423c..84896c2214 100644
+index e30d440ff3..3c74792690 100644
 --- a/paddle/phi/kernels/funcs/top_k_function_cuda.h
 +++ b/paddle/phi/kernels/funcs/top_k_function_cuda.h
-@@ -32,11 +32,11 @@ limitations under the License. */
+@@ -30,11 +30,11 @@ limitations under the License. */
  #include "paddle/phi/kernels/funcs/eigen/eigen_function.h"
  #include "paddle/phi/kernels/primitive/functor_primitives.h"
  
@@ -487,7 +487,7 @@ index dc7935423c..84896c2214 100644
  #endif
  #define MAX_NUM_THREADS 1024
  
-@@ -200,21 +200,56 @@ __device__ __forceinline__ void AddTo(Pair<T> topk[],
+@@ -196,21 +196,56 @@ __device__ __forceinline__ void AddTo(Pair<T> topk[],
    for (int k = beam_size - 2; k >= 0; k--) {
      if (largest) {
        if (topk[k] < p) {
@@ -549,7 +549,7 @@ index dc7935423c..84896c2214 100644
  }
  
  template <typename T, int BlockSize>
-@@ -243,24 +278,24 @@ __device__ __forceinline__ void GetTopK(Pair<T> topk[],
+@@ -239,24 +274,24 @@ __device__ __forceinline__ void GetTopK(Pair<T> topk[],
  template <typename T, int BlockSize>
  __device__ __forceinline__ void GetTopK(Pair<T> topk[],
                                          const T* src,
@@ -581,7 +581,7 @@ index dc7935423c..84896c2214 100644
          }
        }
      }
-@@ -287,7 +322,9 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
+@@ -283,7 +318,9 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
      } else {
        for (int k = 0; k < MaxLength; k++) {
          if (k < MaxLength - (*beam)) {
@@ -592,7 +592,7 @@ index dc7935423c..84896c2214 100644
          } else {
            if (largest) {
              topk[k].set(-static_cast<T>(INFINITY), -1);
-@@ -297,8 +334,10 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
+@@ -293,8 +330,10 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
          }
        }
        if (!(*is_empty)) {
@@ -604,7 +604,7 @@ index dc7935423c..84896c2214 100644
        }
      }
  
-@@ -359,6 +398,8 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
+@@ -355,6 +394,8 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
        shared_max[wid] = input_now;
      }
      __syncthreads();
@@ -613,7 +613,7 @@ index dc7935423c..84896c2214 100644
      if (largest) {
        input_now = (tid < BlockSize / WARP_SIZE)
                        ? shared_max[lane]
-@@ -373,27 +414,32 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
+@@ -369,27 +410,32 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
        if (lane == 0) shared_max[0] = input_now;
      }
      __syncthreads();
@@ -652,7 +652,7 @@ index dc7935423c..84896c2214 100644
          break;
      }
    }
-@@ -482,16 +528,17 @@ struct Bitfield<unsigned int> {
+@@ -478,16 +524,17 @@ struct Bitfield<unsigned int> {
                                                               int pos,
                                                               int len) {
      unsigned int ret;
@@ -674,7 +674,7 @@ index dc7935423c..84896c2214 100644
      return ret;
    }
  };
-@@ -502,7 +549,9 @@ struct Bitfield<uint64_t> {
+@@ -498,7 +545,9 @@ struct Bitfield<uint64_t> {
                                                           int pos,
                                                           int len) {
      uint64_t ret;
@@ -685,7 +685,7 @@ index dc7935423c..84896c2214 100644
      return ret;
    }
  
-@@ -511,9 +560,9 @@ struct Bitfield<uint64_t> {
+@@ -507,9 +556,9 @@ struct Bitfield<uint64_t> {
                                                           int pos,
                                                           int len) {
      uint64_t ret;
@@ -698,7 +698,7 @@ index dc7935423c..84896c2214 100644
      return ret;
    }
  };
-@@ -631,14 +680,20 @@ struct RadixTypeConfig<phi::dtype::bfloat16> {
+@@ -627,14 +676,20 @@ struct RadixTypeConfig<phi::bfloat16> {
  /*---------------------------Helper Functions------------------*/
  __device__ __forceinline__ int GetLaneId() {
    int lane_id;
@@ -723,7 +723,7 @@ index dc7935423c..84896c2214 100644
  }
  
  template <typename T, bool KillDependency, class Function>
-@@ -885,7 +940,8 @@ __global__ void GatherKthValue(const T* input,
+@@ -881,7 +936,8 @@ __global__ void GatherKthValue(const T* input,
  
    // 1. Find the k-th value
    T kth_value = static_cast<T>(0);
@@ -733,13 +733,13 @@ index dc7935423c..84896c2214 100644
        cur_input, k, num_cols, shared_mem, &kth_value);
  
    __shared__ int64_t block_min_idx;
-@@ -1318,3 +1374,4 @@ bool SortTopk(const phi::GPUContext& dev_ctx,
+@@ -1314,3 +1370,4 @@ bool SortTopk(const phi::GPUContext& dev_ctx,
  }
  }  // namespace funcs
  }  // namespace phi
 +//
 diff --git a/paddle/phi/kernels/fusion/gpu/fused_dropout_helper.h b/paddle/phi/kernels/fusion/gpu/fused_dropout_helper.h
-index 45a29b4cff..8449e3d309 100644
+index 32db61532f..0220316bc3 100644
 --- a/paddle/phi/kernels/fusion/gpu/fused_dropout_helper.h
 +++ b/paddle/phi/kernels/fusion/gpu/fused_dropout_helper.h
 @@ -15,7 +15,7 @@
@@ -752,7 +752,7 @@ index 45a29b4cff..8449e3d309 100644
  
  #include "glog/logging.h"
 diff --git a/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h b/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
-index 7d05bcb654..c79cdadabc 100644
+index 9d4bb18d55..ea42cc10a9 100644
 --- a/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
 +++ b/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
 @@ -638,9 +638,7 @@ __global__ __launch_bounds__(THREADS_PER_CTA) void fused_fast_ln_fwd_kernel(
@@ -767,11 +767,11 @@ index 7d05bcb654..c79cdadabc 100644
          }
        }
 diff --git a/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu b/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
-index ad04265bd6..59481d0e6a 100644
+index b8cfdbf3ce..fa14b94a77 100644
 --- a/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
 +++ b/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
-@@ -15,7 +15,7 @@
- #include "paddle/phi/common/bfloat16.h"
+@@ -14,7 +14,7 @@
+ 
  #include "paddle/phi/core/kernel_registry.h"
  #include "paddle/phi/kernels/funcs/aligned_vector.h"
 -#include "paddle/phi/kernels/fusion/gpu/mmha_util.cu.h"
@@ -780,11 +780,11 @@ index ad04265bd6..59481d0e6a 100644
  namespace phi {
  namespace fusion {
 diff --git a/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu b/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
-index 148d72ca9c..5da3461ebf 100644
+index e838778952..83e805e75a 100644
 --- a/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
 +++ b/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
-@@ -15,7 +15,7 @@
- #include "paddle/phi/common/bfloat16.h"
+@@ -14,7 +14,7 @@
+ 
  #include "paddle/phi/core/kernel_registry.h"
  #include "paddle/phi/kernels/funcs/aligned_vector.h"
 -#include "paddle/phi/kernels/fusion/gpu/mmha_util.cu.h"
@@ -793,7 +793,7 @@ index 148d72ca9c..5da3461ebf 100644
  namespace phi {
  namespace fusion {
 diff --git a/paddle/phi/kernels/gpu/depthwise_conv.h b/paddle/phi/kernels/gpu/depthwise_conv.h
-index b16553589a..90080c375d 100644
+index f0cca0f701..02ea957240 100644
 --- a/paddle/phi/kernels/gpu/depthwise_conv.h
 +++ b/paddle/phi/kernels/gpu/depthwise_conv.h
 @@ -29,8 +29,8 @@ namespace cub = hipcub;
@@ -833,7 +833,7 @@ index 29fa252e96..4ae72b0935 100644
  }
  
 diff --git a/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu b/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
-index ee71a2b452..69130ab955 100644
+index 11efd87965..679db14c24 100644
 --- a/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
 +++ b/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
 @@ -17,7 +17,7 @@
@@ -846,7 +846,7 @@ index ee71a2b452..69130ab955 100644
  namespace phi {
  
 diff --git a/paddle/phi/kernels/gpu/log_softmax_kernel.cu b/paddle/phi/kernels/gpu/log_softmax_kernel.cu
-index 00a2f1e210..1267cf7ec2 100644
+index 63c35dd4ee..15da9aea45 100644
 --- a/paddle/phi/kernels/gpu/log_softmax_kernel.cu
 +++ b/paddle/phi/kernels/gpu/log_softmax_kernel.cu
 @@ -17,7 +17,7 @@
@@ -872,7 +872,7 @@ index 1bdbe1564c..f753b54bc6 100644
  #include "paddle/phi/kernels/impl/tril_triu_kernel_impl.h"
  #include "paddle/phi/kernels/lstsq_kernel.h"
 diff --git a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h b/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
-index 14b24dd3ed..e54a342c98 100644
+index 9bc5326c90..79b57a8203 100644
 --- a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
 @@ -21,7 +21,7 @@ limitations under the License. */
@@ -885,7 +885,7 @@ index 14b24dd3ed..e54a342c98 100644
  #include "paddle/phi/kernels/funcs/eigen/eigen_function.h"
  #include "paddle/phi/kernels/funcs/for_range.h"
 diff --git a/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h b/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h
-index 06fff0dd58..973049105f 100644
+index cf80666b4e..ca76e055fb 100644
 --- a/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h
 @@ -19,7 +19,7 @@ limitations under the License. */
@@ -1041,461 +1041,12 @@ index 4099d8b506..baef2cd643 100644
  #include "paddle/phi/kernels/funcs/eigen/common.h"
  #include "paddle/phi/kernels/funcs/math_function.h"
  
-diff --git a/test/legacy_test/test_batch_norm_op.py b/test/legacy_test/test_batch_norm_op.py
-index 4a5660ea0e..ca4e456e02 100644
---- a/test/legacy_test/test_batch_norm_op.py
-+++ b/test/legacy_test/test_batch_norm_op.py
-@@ -22,7 +22,9 @@ from op_test import (
-     _set_use_system_allocator,
-     convert_float_to_uint16,
-     convert_uint16_to_float,
--    get_places,
-+    get_devices,
-+    is_custom_device,
-+    get_device_place,
- )
- 
- import paddle
-@@ -189,6 +191,7 @@ def _reference_grad(x, y_grad, scale, mean, var, epsilon, data_format):
- 
- 
- def create_or_get_tensor(scope, var_name, var, place):
-+    
-     tensor = scope.var(var_name).get_tensor()
-     if var is not None:
-         assert isinstance(var, np.ndarray)
-@@ -321,7 +324,6 @@ class TestBatchNormOpInference(unittest.TestCase):
-             fuse_with_relu=self.fuse_with_relu,
-             epsilon=epsilon,
-         )
--
-         batch_norm_op.run(scope, place)
- 
-         # When op is called without Executor then
-@@ -454,7 +456,7 @@ class TestBatchNormOpInference(unittest.TestCase):
-         )
- 
-     def test_check_output(self):
--        for place in get_places():
-+        for place in get_devices():
-             for data_format in ["NCHW", "NHWC"]:
-                 self.check_with_place(
-                     place,
-@@ -488,8 +490,8 @@ class TestFP16BatchNormOpInference(TestBatchNormOpInference):
- 
-     def test_check_output(self):
-         places = []
--        if core.is_compiled_with_cuda():
--            place = core.CUDAPlace(0)
-+        if core.is_compiled_with_cuda() or is_custom_device():
-+            place = get_device_place()
-             if core.is_float16_supported(place):
-                 places.append(place)
-         for place in places:
-@@ -510,8 +512,8 @@ class TestFP16BatchNormOpInference(TestBatchNormOpInference):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda()
--    or not core.is_bfloat16_supported(core.CUDAPlace(0)),
-+    not (core.is_compiled_with_cuda() or is_custom_device())
-+    or not core.is_bfloat16_supported(get_device_place()),
-     "core is not compiled with CUDA or not support the bfloat16",
- )
- class TestBF16BatchNormOpInference(TestBatchNormOpInference):
-@@ -522,7 +524,7 @@ class TestBF16BatchNormOpInference(TestBatchNormOpInference):
-         self.init_kernel_type()
- 
-     def test_check_output(self):
--        places = [core.CUDAPlace(0)]
-+        places = [get_device_place()]
-         for place in places:
-             # for data_format in ["NCHW", "NHWC"]:
-             for data_format in ["NCHW"]:
-@@ -562,7 +564,7 @@ class TestDygraphBatchNormAPIError(unittest.TestCase):
- 
- class TestDygraphBatchNormTrainableStats(unittest.TestCase):
-     def test_dygraph(self):
--        for p in get_places():
-+        for p in get_devices():
-             shape = [4, 10, 4, 4]
- 
-             def compute(x, is_test, trainable_statistics):
-@@ -581,7 +583,7 @@ class TestDygraphBatchNormTrainableStats(unittest.TestCase):
-             np.testing.assert_allclose(y1, y2, rtol=1e-05)
- 
-     def test_static(self):
--        for p in get_places():
-+        for p in get_devices():
-             exe = base.Executor(p)
-             shape = [4, 10, 16, 16]
- 
-@@ -625,7 +627,7 @@ class TestDygraphBatchNormOpenReserveSpace(unittest.TestCase):
- 
- class TestBatchNormAPI_ZeroSize(unittest.TestCase):
-     def setUp(self):
--        self.places = get_places()
-+        self.places = get_devices()
- 
-     def test_dygraph(self):
-         for place in self.places:
-diff --git a/test/legacy_test/test_conv3d_transpose_op.py b/test/legacy_test/test_conv3d_transpose_op.py
-index c9853e9073..277eb26d00 100644
---- a/test/legacy_test/test_conv3d_transpose_op.py
-+++ b/test/legacy_test/test_conv3d_transpose_op.py
-@@ -19,7 +19,7 @@ import numpy as np
- import paddle
- 
- paddle.enable_static()
--from op_test import OpTest, copy_bits_from_float_to_uint16
-+from op_test import OpTest, copy_bits_from_float_to_uint16, is_custom_device, get_devices, get_device_place
- 
- from paddle.base import core
- 
-@@ -150,7 +150,7 @@ def conv3dtranspose_forward_naive(input_, filter_, attrs):
- 
- def create_test_cudnn_fp16_class(parent, grad_check=True):
-     @unittest.skipIf(
--        not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+        not ((core.is_compiled_with_cuda() or is_custom_device()) or is_custom_device()), "core is not compiled with CUDA"
-     )
-     class TestConv3DTransposeCUDNNFP16(parent):
-         def init_kernel_type(self):
-@@ -158,20 +158,20 @@ def create_test_cudnn_fp16_class(parent, grad_check=True):
-             self.dtype = np.float16
- 
-         def test_check_output(self):
--            if core.is_compiled_with_cuda():
--                place = core.CUDAPlace(0)
-+            if ((core.is_compiled_with_cuda() or is_custom_device()) or is_custom_device()):
-+                place = get_device_place()
-                 if core.is_float16_supported(place):
-                     self.check_output_with_place(place, atol=2e-2)
- 
-         def test_check_grad_no_filter(self):
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             if core.is_float16_supported(place) and grad_check:
-                 self.check_grad_with_place(
-                     place, ['Input'], 'Output', no_grad_set={'Filter'}
-                 )
- 
-         def test_check_grad_no_input(self):
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             if core.is_float16_supported(place) and grad_check:
-                 self.check_grad_with_place(
-                     place, ['Filter'], 'Output', no_grad_set={'Input'}
-@@ -184,8 +184,8 @@ def create_test_cudnn_fp16_class(parent, grad_check=True):
- 
- def create_test_cudnn_bf16_class(parent):
-     @unittest.skipIf(
--        not core.is_compiled_with_cuda()
--        or not core.is_bfloat16_supported(core.CUDAPlace(0)),
-+        not (core.is_compiled_with_cuda() or is_custom_device())
-+        or not core.is_bfloat16_supported(get_device_place()),
-         "core is not compiled with CUDA and do not support bfloat16",
-     )
-     class TestConv3DTransposeCUDNNBF16(parent):
-@@ -194,11 +194,11 @@ def create_test_cudnn_bf16_class(parent):
-             self.dtype = np.uint16
- 
-         def test_check_output(self):
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             self.check_output_with_place(place)
- 
-         def test_check_grad(self):
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             self.check_grad_with_place(
-                 place,
-                 {'Input', 'Filter'},
-@@ -206,7 +206,7 @@ def create_test_cudnn_bf16_class(parent):
-             )
- 
-         def test_check_grad_no_filter(self):
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             self.check_grad_with_place(
-                 place,
-                 ['Input'],
-@@ -215,7 +215,7 @@ def create_test_cudnn_bf16_class(parent):
-             )
- 
-         def test_check_grad_no_input(self):
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             self.check_grad_with_place(
-                 place,
-                 ['Filter'],
-@@ -306,14 +306,14 @@ class TestConv3DTransposeOp(OpTest):
- 
-     def test_check_output(self):
-         if self.use_cudnn:
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             self.check_output_with_place(place, atol=1e-5)
-         else:
-             self.check_output()
- 
-     def test_check_grad(self):
-         if self.use_cudnn:
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             self.check_grad_with_place(
-                 place,
-                 {'Input', 'Filter'},
-@@ -327,7 +327,7 @@ class TestConv3DTransposeOp(OpTest):
- 
-     def test_check_grad_no_filter(self):
-         if self.use_cudnn:
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             self.check_grad_with_place(
-                 place,
-                 ['Input'],
-@@ -345,7 +345,7 @@ class TestConv3DTransposeOp(OpTest):
- 
-     def test_check_grad_no_input(self):
-         if self.use_cudnn:
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             self.check_grad_with_place(
-                 place,
-                 ['Filter'],
-@@ -471,7 +471,7 @@ class Test_NHWC(TestConv3DTransposeOp):
- 
- # ------------ test_cudnn ------------
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNN(TestConv3DTransposeOp):
-     def init_op_type(self):
-@@ -481,7 +481,7 @@ class TestCUDNN(TestConv3DTransposeOp):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithSymmetricPad(TestWithSymmetricPad):
-     def init_test_case(self):
-@@ -500,7 +500,7 @@ class TestCUDNNWithSymmetricPad(TestWithSymmetricPad):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithAsymmetricPad(TestWithAsymmetricPad):
-     def init_test_case(self):
-@@ -519,7 +519,7 @@ class TestCUDNNWithAsymmetricPad(TestWithAsymmetricPad):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithSAMEPad(TestWithSAMEPad):
-     def init_test_case(self):
-@@ -538,7 +538,7 @@ class TestCUDNNWithSAMEPad(TestWithSAMEPad):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithVALIDPad(TestWithVALIDPad):
-     def init_test_case(self):
-@@ -557,7 +557,7 @@ class TestCUDNNWithVALIDPad(TestWithVALIDPad):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithStride(TestWithStride):
-     def init_test_case(self):
-@@ -576,7 +576,7 @@ class TestCUDNNWithStride(TestWithStride):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithGroups(TestWithGroups):
-     def init_test_case(self):
-@@ -610,7 +610,7 @@ class TestCUDNNWithGroups(TestWithGroups):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNN_NHWC(TestConv3DTransposeOp):
-     def init_test_case(self):
-@@ -630,7 +630,7 @@ class TestCUDNN_NHWC(TestConv3DTransposeOp):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithSymmetricPad_NHWC(TestWithSymmetricPad):
-     def init_test_case(self):
-@@ -650,7 +650,7 @@ class TestCUDNNWithSymmetricPad_NHWC(TestWithSymmetricPad):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithAsymmetricPad_NHWC(TestWithAsymmetricPad):
-     def init_test_case(self):
-@@ -670,7 +670,7 @@ class TestCUDNNWithAsymmetricPad_NHWC(TestWithAsymmetricPad):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithStride_NHWC(TestWithStride):
-     def init_test_case(self):
-@@ -690,7 +690,7 @@ class TestCUDNNWithStride_NHWC(TestWithStride):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestCUDNNWithGroups_NHWC(TestWithGroups):
-     def init_test_case(self):
-diff --git a/test/legacy_test/test_cross_entropy_op.py b/test/legacy_test/test_cross_entropy_op.py
-index 74eedb6a48..e4c6ecb98a 100644
---- a/test/legacy_test/test_cross_entropy_op.py
-+++ b/test/legacy_test/test_cross_entropy_op.py
-@@ -20,6 +20,8 @@ from op_test import (
-     get_places,
-     paddle_static_guard,
-     randomize_probability,
-+    is_custom_device,
-+    get_device_place,
- )
- 
- import paddle
-@@ -385,19 +387,19 @@ class TestCrossEntropyOp7RemoveLastDim(TestCrossEntropyOp7):
- # Add Fp16 test
- def create_test_class(parent, cls_name):
-     @unittest.skipIf(
--        not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+        not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
-     )
-     class TestCrossEntropyFP16Op(parent):
-         def init_dtype_type(self):
-             return np.float16
- 
-         def test_check_output(self):
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             if core.is_float16_supported(place):
-                 self.check_output_with_place(place, atol=2e-1)
- 
-         def test_check_grad(self):
--            place = core.CUDAPlace(0)
-+            place = get_device_place()
-             if core.is_float16_supported(place):
-                 self.check_grad_with_place(
-                     place, ['X'], 'Y', max_relative_error=0.9
-diff --git a/test/legacy_test/test_fmin_op.py b/test/legacy_test/test_fmin_op.py
-index 4c9944e877..e6ed5c0f8e 100644
---- a/test/legacy_test/test_fmin_op.py
-+++ b/test/legacy_test/test_fmin_op.py
-@@ -15,8 +15,7 @@
- import unittest
- 
- import numpy as np
--from op_test import OpTest, convert_float_to_uint16
--
-+from op_test import OpTest, convert_float_to_uint16, is_custom_device, get_devices, get_device_place
- import paddle
- from paddle.base import core
- 
-@@ -28,8 +27,8 @@ class ApiFMinTest(unittest.TestCase):
- 
-     def setUp(self):
-         """setUp"""
--        if core.is_compiled_with_cuda():
--            self.place = core.CUDAPlace(0)
-+        if core.is_compiled_with_cuda() or is_custom_device():
-+            self.place = get_device_place()
-         else:
-             self.place = core.CPUPlace()
- 
-@@ -259,8 +258,8 @@ class TestElementwiseFmin3Op(OpTest):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda()
--    or not core.is_bfloat16_supported(core.CUDAPlace(0)),
-+    not (core.is_compiled_with_cuda() or is_custom_device())
-+    or not core.is_bfloat16_supported(get_device_place()),
-     "core is not compiled with CUDA and not support the bfloat16",
- )
- class TestFminBF16OP(OpTest):
-@@ -281,13 +280,13 @@ class TestFminBF16OP(OpTest):
-         self.outputs = {'Out': convert_float_to_uint16(out)}
- 
-     def test_check_output(self):
--        place = core.CUDAPlace(0)
-+        place = get_device_place()
-         self.check_output_with_place(
-             place, check_pir=True, check_symbol_infer=False
-         )
- 
-     def test_check_grad(self):
--        place = core.CUDAPlace(0)
-+        place = get_device_place()
-         self.check_grad_with_place(
-             place, ['X', 'Y'], 'Out', check_pir=True, check_prim_pir=True
-         )
-@@ -304,7 +303,7 @@ class TestElementwiseFminOpZeroSize1(TestElementwiseFminOp):
- 
- 
- @unittest.skipIf(
--    not core.is_compiled_with_cuda(), "core is not compiled with CUDA"
-+    not (core.is_compiled_with_cuda() or is_custom_device()), "core is not compiled with CUDA"
- )
- class TestElementwiseFminOp_Stride(OpTest):
-     no_need_check_grad = True
-@@ -335,7 +334,7 @@ class TestElementwiseFminOp_Stride(OpTest):
-         self.val_dtype = np.float64
- 
-     def test_check_output(self):
--        place = core.CUDAPlace(0)
-+        place = get_device_place()
-         self.check_strided_forward = True
-         self.check_output(
-             place,
-diff --git a/test/legacy_test/test_spectral_norm_op.py b/test/legacy_test/test_spectral_norm_op.py
-index 80e5c2ec63..f1602a8b40 100644
---- a/test/legacy_test/test_spectral_norm_op.py
-+++ b/test/legacy_test/test_spectral_norm_op.py
-@@ -112,6 +112,7 @@ class TestSpectralNormOpNoGrad2(TestSpectralNormOpNoGrad):
- 
- class TestSpectralNormOp(TestSpectralNormOpNoGrad):
-     def test_check_grad_ignore_uv(self):
-+        
-         self.check_grad(
-             ['Weight'],
-             'Out',
 diff --git a/third_party/flagcx b/third_party/flagcx
-index 77495cd6a8..7e6c4cc3ca 160000
+index 7c469f4af9..7e6c4cc3ca 160000
 --- a/third_party/flagcx
 +++ b/third_party/flagcx
 @@ -1 +1 @@
--Subproject commit 77495cd6a84b1c8f88dd8f6f99e63ef3c84c766f
+-Subproject commit 7c469f4af991bf0f64b8f76d66f8e307a5eaea3f
 +Subproject commit 7e6c4cc3cad3fce9b3dedfe46a9d195d616e8ffa
 diff --git a/third_party/flashattn b/third_party/flashattn
 index 581e48aa69..749aca3807 160000
