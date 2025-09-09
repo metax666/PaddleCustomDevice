@@ -1028,3 +1028,36 @@ index 6f03f76eeb..5fe2c3e7dc 100644
  #include "paddle/phi/kernels/funcs/for_range.h"
  #include "paddle/phi/kernels/funcs/matrix_inverse.h"
  
+diff --git a/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h b/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
+index 4099d8b506..baef2cd643 100644
+--- a/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
++++ b/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
+@@ -14,7 +14,7 @@
+ 
+ #pragma once
+ 
+-#include "paddle/phi/kernels/funcs/blas/blas.h"
++#include "kernels/funcs/blas/blas.h"
+ #include "paddle/phi/kernels/funcs/eigen/common.h"
+ #include "paddle/phi/kernels/funcs/math_function.h"
+ 
+diff --git a/third_party/flagcx b/third_party/flagcx
+index 7c469f4af9..7e6c4cc3ca 160000
+--- a/third_party/flagcx
++++ b/third_party/flagcx
+@@ -1 +1 @@
+-Subproject commit 7c469f4af991bf0f64b8f76d66f8e307a5eaea3f
++Subproject commit 7e6c4cc3cad3fce9b3dedfe46a9d195d616e8ffa
+diff --git a/third_party/flashattn b/third_party/flashattn
+index 581e48aa69..749aca3807 160000
+--- a/third_party/flashattn
++++ b/third_party/flashattn
+@@ -1 +1 @@
+-Subproject commit 581e48aa693a17ec3676ec2715d46130310d318d
++Subproject commit 749aca380794b472096d4e7ea01dd252ab0887c9
+diff --git a/third_party/yaml-cpp b/third_party/yaml-cpp
+--- a/third_party/yaml-cpp
++++ b/third_party/yaml-cpp
+@@ -1 +1 @@
+-Subproject commit 1d8ca1f35eb3a9c9142462b28282a848e5d29a91
++Subproject commit 1d8ca1f35eb3a9c9142462b28282a848e5d29a91-dirty
