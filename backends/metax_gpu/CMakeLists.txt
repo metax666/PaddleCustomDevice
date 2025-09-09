@@ -26,6 +26,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 set(WITH_MKLML ON)
 
+set(THIRD_PARTY_PATH
+    "${PADDLE_SOURCE_DIR}/build/third_party"
+    CACHE PATH "Third party libraries directory.")
+
 include(paddle)
 include(version)
 include(generic)
@@ -51,10 +55,6 @@ option(WITH_TESTING "compile with unit testing" ON)
 option(ON_INFER "compile with inference c++ lib" OFF)
 option(WITH_GPU "Compile PaddlePaddle with METAX_GPU" ON)
 option(WITH_CUSTOM_DEVICE "Compile PaddlePaddle with CUSTOM_DEVICE" ON)
-
-set(THIRD_PARTY_PATH
-    "${PADDLE_SOURCE_DIR}/build/third_party"
-    CACHE PATH "Third party libraries directory.")
 
 macro(UNSET_VAR VAR_NAME)
   unset(${VAR_NAME} CACHE)
