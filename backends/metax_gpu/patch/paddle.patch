@@ -419,7 +419,7 @@ index d69eb67d6f..1d8b6e9375 100644
  #include "paddle/phi/kernels/funcs/math_function.h"
  
 diff --git a/paddle/phi/kernels/funcs/fc_functor.cu b/paddle/phi/kernels/funcs/fc_functor.cu
-index bdfd7313af..546bd07d5e 100644
+index cb35feee32..64f5bd24ac 100644
 --- a/paddle/phi/kernels/funcs/fc_functor.cu
 +++ b/paddle/phi/kernels/funcs/fc_functor.cu
 @@ -16,12 +16,12 @@ limitations under the License. */
@@ -438,7 +438,7 @@ index bdfd7313af..546bd07d5e 100644
  #include "paddle/phi/kernels/matmul_kernel.h"
  
 diff --git a/paddle/phi/kernels/funcs/matrix_inverse.cu b/paddle/phi/kernels/funcs/matrix_inverse.cu
-index 1a9a9cfb85..08ebe4b8af 100644
+index e101224970..a52eb6096f 100644
 --- a/paddle/phi/kernels/funcs/matrix_inverse.cu
 +++ b/paddle/phi/kernels/funcs/matrix_inverse.cu
 @@ -15,11 +15,13 @@ limitations under the License. */
@@ -470,10 +470,10 @@ index 558d363b39..05da04b517 100644
  #include "paddle/phi/kernels/funcs/scatter.cu.h"
  
 diff --git a/paddle/phi/kernels/funcs/top_k_function_cuda.h b/paddle/phi/kernels/funcs/top_k_function_cuda.h
-index dc7935423c..84896c2214 100644
+index e30d440ff3..3c74792690 100644
 --- a/paddle/phi/kernels/funcs/top_k_function_cuda.h
 +++ b/paddle/phi/kernels/funcs/top_k_function_cuda.h
-@@ -32,11 +32,11 @@ limitations under the License. */
+@@ -30,11 +30,11 @@ limitations under the License. */
  #include "paddle/phi/kernels/funcs/eigen/eigen_function.h"
  #include "paddle/phi/kernels/primitive/functor_primitives.h"
  
@@ -487,7 +487,7 @@ index dc7935423c..84896c2214 100644
  #endif
  #define MAX_NUM_THREADS 1024
  
-@@ -200,21 +200,56 @@ __device__ __forceinline__ void AddTo(Pair<T> topk[],
+@@ -196,21 +196,56 @@ __device__ __forceinline__ void AddTo(Pair<T> topk[],
    for (int k = beam_size - 2; k >= 0; k--) {
      if (largest) {
        if (topk[k] < p) {
@@ -549,7 +549,7 @@ index dc7935423c..84896c2214 100644
  }
  
  template <typename T, int BlockSize>
-@@ -243,24 +278,24 @@ __device__ __forceinline__ void GetTopK(Pair<T> topk[],
+@@ -239,24 +274,24 @@ __device__ __forceinline__ void GetTopK(Pair<T> topk[],
  template <typename T, int BlockSize>
  __device__ __forceinline__ void GetTopK(Pair<T> topk[],
                                          const T* src,
@@ -581,7 +581,7 @@ index dc7935423c..84896c2214 100644
          }
        }
      }
-@@ -287,7 +322,9 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
+@@ -283,7 +318,9 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
      } else {
        for (int k = 0; k < MaxLength; k++) {
          if (k < MaxLength - (*beam)) {
@@ -592,7 +592,7 @@ index dc7935423c..84896c2214 100644
          } else {
            if (largest) {
              topk[k].set(-static_cast<T>(INFINITY), -1);
-@@ -297,8 +334,10 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
+@@ -293,8 +330,10 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
          }
        }
        if (!(*is_empty)) {
@@ -604,7 +604,7 @@ index dc7935423c..84896c2214 100644
        }
      }
  
-@@ -359,6 +398,8 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
+@@ -355,6 +394,8 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
        shared_max[wid] = input_now;
      }
      __syncthreads();
@@ -613,7 +613,7 @@ index dc7935423c..84896c2214 100644
      if (largest) {
        input_now = (tid < BlockSize / WARP_SIZE)
                        ? shared_max[lane]
-@@ -373,27 +414,32 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
+@@ -369,27 +410,32 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
        if (lane == 0) shared_max[0] = input_now;
      }
      __syncthreads();
@@ -652,7 +652,7 @@ index dc7935423c..84896c2214 100644
          break;
      }
    }
-@@ -482,16 +528,17 @@ struct Bitfield<unsigned int> {
+@@ -478,16 +524,17 @@ struct Bitfield<unsigned int> {
                                                               int pos,
                                                               int len) {
      unsigned int ret;
@@ -674,7 +674,7 @@ index dc7935423c..84896c2214 100644
      return ret;
    }
  };
-@@ -502,7 +549,9 @@ struct Bitfield<uint64_t> {
+@@ -498,7 +545,9 @@ struct Bitfield<uint64_t> {
                                                           int pos,
                                                           int len) {
      uint64_t ret;
@@ -685,7 +685,7 @@ index dc7935423c..84896c2214 100644
      return ret;
    }
  
-@@ -511,9 +560,9 @@ struct Bitfield<uint64_t> {
+@@ -507,9 +556,9 @@ struct Bitfield<uint64_t> {
                                                           int pos,
                                                           int len) {
      uint64_t ret;
@@ -698,7 +698,7 @@ index dc7935423c..84896c2214 100644
      return ret;
    }
  };
-@@ -631,14 +680,20 @@ struct RadixTypeConfig<phi::dtype::bfloat16> {
+@@ -627,14 +676,20 @@ struct RadixTypeConfig<phi::bfloat16> {
  /*---------------------------Helper Functions------------------*/
  __device__ __forceinline__ int GetLaneId() {
    int lane_id;
@@ -723,7 +723,7 @@ index dc7935423c..84896c2214 100644
  }
  
  template <typename T, bool KillDependency, class Function>
-@@ -885,7 +940,8 @@ __global__ void GatherKthValue(const T* input,
+@@ -881,7 +936,8 @@ __global__ void GatherKthValue(const T* input,
  
    // 1. Find the k-th value
    T kth_value = static_cast<T>(0);
@@ -733,13 +733,13 @@ index dc7935423c..84896c2214 100644
        cur_input, k, num_cols, shared_mem, &kth_value);
  
    __shared__ int64_t block_min_idx;
-@@ -1318,3 +1374,4 @@ bool SortTopk(const phi::GPUContext& dev_ctx,
+@@ -1314,3 +1370,4 @@ bool SortTopk(const phi::GPUContext& dev_ctx,
  }
  }  // namespace funcs
  }  // namespace phi
 +//
 diff --git a/paddle/phi/kernels/fusion/gpu/fused_dropout_helper.h b/paddle/phi/kernels/fusion/gpu/fused_dropout_helper.h
-index 45a29b4cff..8449e3d309 100644
+index 32db61532f..0220316bc3 100644
 --- a/paddle/phi/kernels/fusion/gpu/fused_dropout_helper.h
 +++ b/paddle/phi/kernels/fusion/gpu/fused_dropout_helper.h
 @@ -15,7 +15,7 @@
@@ -752,7 +752,7 @@ index 45a29b4cff..8449e3d309 100644
  
  #include "glog/logging.h"
 diff --git a/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h b/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
-index 7d05bcb654..c79cdadabc 100644
+index 9d4bb18d55..ea42cc10a9 100644
 --- a/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
 +++ b/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
 @@ -638,9 +638,7 @@ __global__ __launch_bounds__(THREADS_PER_CTA) void fused_fast_ln_fwd_kernel(
@@ -767,11 +767,11 @@ index 7d05bcb654..c79cdadabc 100644
          }
        }
 diff --git a/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu b/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
-index ad04265bd6..59481d0e6a 100644
+index b8cfdbf3ce..fa14b94a77 100644
 --- a/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
 +++ b/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
-@@ -15,7 +15,7 @@
- #include "paddle/phi/common/bfloat16.h"
+@@ -14,7 +14,7 @@
+ 
  #include "paddle/phi/core/kernel_registry.h"
  #include "paddle/phi/kernels/funcs/aligned_vector.h"
 -#include "paddle/phi/kernels/fusion/gpu/mmha_util.cu.h"
@@ -780,11 +780,11 @@ index ad04265bd6..59481d0e6a 100644
  namespace phi {
  namespace fusion {
 diff --git a/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu b/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
-index 148d72ca9c..5da3461ebf 100644
+index e838778952..83e805e75a 100644
 --- a/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
 +++ b/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
-@@ -15,7 +15,7 @@
- #include "paddle/phi/common/bfloat16.h"
+@@ -14,7 +14,7 @@
+ 
  #include "paddle/phi/core/kernel_registry.h"
  #include "paddle/phi/kernels/funcs/aligned_vector.h"
 -#include "paddle/phi/kernels/fusion/gpu/mmha_util.cu.h"
@@ -793,7 +793,7 @@ index 148d72ca9c..5da3461ebf 100644
  namespace phi {
  namespace fusion {
 diff --git a/paddle/phi/kernels/gpu/depthwise_conv.h b/paddle/phi/kernels/gpu/depthwise_conv.h
-index b16553589a..90080c375d 100644
+index f0cca0f701..02ea957240 100644
 --- a/paddle/phi/kernels/gpu/depthwise_conv.h
 +++ b/paddle/phi/kernels/gpu/depthwise_conv.h
 @@ -29,8 +29,8 @@ namespace cub = hipcub;
@@ -833,7 +833,7 @@ index 29fa252e96..4ae72b0935 100644
  }
  
 diff --git a/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu b/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
-index ee71a2b452..69130ab955 100644
+index 11efd87965..679db14c24 100644
 --- a/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
 +++ b/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
 @@ -17,7 +17,7 @@
@@ -846,7 +846,7 @@ index ee71a2b452..69130ab955 100644
  namespace phi {
  
 diff --git a/paddle/phi/kernels/gpu/log_softmax_kernel.cu b/paddle/phi/kernels/gpu/log_softmax_kernel.cu
-index 00a2f1e210..1267cf7ec2 100644
+index 63c35dd4ee..15da9aea45 100644
 --- a/paddle/phi/kernels/gpu/log_softmax_kernel.cu
 +++ b/paddle/phi/kernels/gpu/log_softmax_kernel.cu
 @@ -17,7 +17,7 @@
@@ -872,7 +872,7 @@ index 1bdbe1564c..f753b54bc6 100644
  #include "paddle/phi/kernels/impl/tril_triu_kernel_impl.h"
  #include "paddle/phi/kernels/lstsq_kernel.h"
 diff --git a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h b/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
-index 14b24dd3ed..e54a342c98 100644
+index 9bc5326c90..79b57a8203 100644
 --- a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
 @@ -21,7 +21,7 @@ limitations under the License. */
@@ -885,7 +885,7 @@ index 14b24dd3ed..e54a342c98 100644
  #include "paddle/phi/kernels/funcs/eigen/eigen_function.h"
  #include "paddle/phi/kernels/funcs/for_range.h"
 diff --git a/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h b/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h
-index 06fff0dd58..973049105f 100644
+index cf80666b4e..ca76e055fb 100644
 --- a/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h
 @@ -19,7 +19,7 @@ limitations under the License. */
@@ -1028,12 +1028,25 @@ index 6f03f76eeb..5fe2c3e7dc 100644
  #include "paddle/phi/kernels/funcs/for_range.h"
  #include "paddle/phi/kernels/funcs/matrix_inverse.h"
  
+diff --git a/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h b/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
+index 4099d8b506..baef2cd643 100644
+--- a/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
++++ b/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
+@@ -14,7 +14,7 @@
+ 
+ #pragma once
+ 
+-#include "paddle/phi/kernels/funcs/blas/blas.h"
++#include "kernels/funcs/blas/blas.h"
+ #include "paddle/phi/kernels/funcs/eigen/common.h"
+ #include "paddle/phi/kernels/funcs/math_function.h"
+ 
 diff --git a/third_party/flagcx b/third_party/flagcx
-index 77495cd6a8..7e6c4cc3ca 160000
+index 7c469f4af9..7e6c4cc3ca 160000
 --- a/third_party/flagcx
 +++ b/third_party/flagcx
 @@ -1 +1 @@
--Subproject commit 77495cd6a84b1c8f88dd8f6f99e63ef3c84c766f
+-Subproject commit 7c469f4af991bf0f64b8f76d66f8e307a5eaea3f
 +Subproject commit 7e6c4cc3cad3fce9b3dedfe46a9d195d616e8ffa
 diff --git a/third_party/flashattn b/third_party/flashattn
 index 581e48aa69..749aca3807 160000
