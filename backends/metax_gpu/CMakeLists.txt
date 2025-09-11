@@ -26,11 +26,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 set(WITH_MKLML ON)
 
+include(paddle)
 set(THIRD_PARTY_PATH
     "${PADDLE_SOURCE_DIR}/build/third_party"
     CACHE PATH "Third party libraries directory.")
 
-include(paddle)
 include(version)
 include(generic)
 include(cblas)
