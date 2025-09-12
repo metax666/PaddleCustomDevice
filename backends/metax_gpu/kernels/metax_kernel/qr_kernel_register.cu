@@ -22,9 +22,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "kernels/impl/values_vectors_functor.h"
+#include "kernels/metax_context.h"
 #include "paddle/phi/backends/gpu/gpu_context.h"
-#include "paddle/phi/common/complex.h"
 #include "paddle/phi/common/memory_utils.h"
 #include "paddle/phi/core/enforce.h"
 #include "paddle/phi/core/kernel_registry.h"
@@ -39,7 +38,6 @@
 #include "paddle/phi/kernels/slice_kernel.h"
 #include "paddle/phi/kernels/transpose_kernel.h"
 #include "paddle/phi/kernels/tril_triu_kernel.h"
-
 namespace phi {
 
 template <class T, class Context>
@@ -358,47 +356,47 @@ void QrKernel(const Context& dev_ctx,
 
 #ifdef PADDLE_WITH_HIP
 #define FUNC_WITH_TYPES(m) m(float, s) m(double, d)
-#define GEQRF_BATCH_INSTANCE(T, C)                              \
-  template <>                                                   \
-  void BatchedGeqrf<GPUContext, T>(const GPUContext& dev_ctx,   \
-                                   int batch_size,              \
-                                   int m,                       \
-                                   int n,                       \
-                                   T* a,                        \
-                                   int lda,                     \
-                                   T* tau,                      \
-                                   int a_stride,                \
-                                   int tau_stride) {            \
-    auto handle = dev_ctx.cusolver_dn_handle();                 \
-    for (int i = 0; i < batch_size; ++i) {                      \
-      T* a_working_ptr = &a[i * a_stride];                      \
-      T* tau_working_ptr = &tau[i * tau_stride];                \
-      PADDLE_ENFORCE_GPU_SUCCESS(dynload::rocsolver_##C##geqrf( \
-          handle, m, n, a_working_ptr, lda, tau_working_ptr));  \
-    }                                                           \
+#define GEQRF_BATCH_INSTANCE(T, C)                                           \
+  template <>                                                                \
+  void BatchedGeqrf<GPUContext, T>(const GPUContext& dev_ctx,                \
+                                   int batch_size,                           \
+                                   int m,                                    \
+                                   int n,                                    \
+                                   T* a,                                     \
+                                   int lda,                                  \
+                                   T* tau,                                   \
+                                   int a_stride,                             \
+                                   int tau_stride) {                         \
+    auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace()); \
+    for (int i = 0; i < batch_size; ++i) {                                   \
+      T* a_working_ptr = &a[i * a_stride];                                   \
+      T* tau_working_ptr = &tau[i * tau_stride];                             \
+      PADDLE_ENFORCE_GPU_SUCCESS(dynload::rocsolver_##C##geqrf(              \
+          handle, m, n, a_working_ptr, lda, tau_working_ptr));               \
+    }                                                                        \
   }
 
 FUNC_WITH_TYPES(GEQRF_BATCH_INSTANCE);
 
-#define ORGQR_BATCH_INSTANCE(T, C)                                \
-  template <>                                                     \
-  void BatchedOrgqr<GPUContext, T>(const GPUContext& dev_ctx,     \
-                                   int batch_size,                \
-                                   int m,                         \
-                                   int n,                         \
-                                   int k,                         \
-                                   T* a,                          \
-                                   int lda,                       \
-                                   T* tau,                        \
-                                   int a_stride,                  \
-                                   int tau_stride) {              \
-    auto handle = dev_ctx.cusolver_dn_handle();                   \
-    for (int i = 0; i < batch_size; ++i) {                        \
-      T* a_working_ptr = &a[i * a_stride];                        \
-      T* tau_working_ptr = &tau[i * tau_stride];                  \
-      PADDLE_ENFORCE_GPU_SUCCESS(dynload::rocsolver_##C##orgqr(   \
-          handle, m, n, k, a_working_ptr, lda, tau_working_ptr)); \
-    }                                                             \
+#define ORGQR_BATCH_INSTANCE(T, C)                                           \
+  template <>                                                                \
+  void BatchedOrgqr<GPUContext, T>(const GPUContext& dev_ctx,                \
+                                   int batch_size,                           \
+                                   int m,                                    \
+                                   int n,                                    \
+                                   int k,                                    \
+                                   T* a,                                     \
+                                   int lda,                                  \
+                                   T* tau,                                   \
+                                   int a_stride,                             \
+                                   int tau_stride) {                         \
+    auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace()); \
+    for (int i = 0; i < batch_size; ++i) {                                   \
+      T* a_working_ptr = &a[i * a_stride];                                   \
+      T* tau_working_ptr = &tau[i * tau_stride];                             \
+      PADDLE_ENFORCE_GPU_SUCCESS(dynload::rocsolver_##C##orgqr(              \
+          handle, m, n, k, a_working_ptr, lda, tau_working_ptr));            \
+    }                                                                        \
   }
 
 FUNC_WITH_TYPES(ORGQR_BATCH_INSTANCE);
@@ -421,7 +419,6 @@ void BatchedGeqrf<GPUContext, float>(const GPUContext& dev_ctx,
     const int64_t a_stride_64 = static_cast<int64_t>(a_stride);
     const int64_t tau_stride_64 = static_cast<int64_t>(tau_stride);
 
-    // auto handle = dev_ctx.cusolver_dn_handle();
     auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
 
     size_t workspace_in_bytes_on_device = 0;
@@ -499,7 +496,6 @@ void BatchedGeqrf<GPUContext, float>(const GPUContext& dev_ctx,
   } else {
     int lwork = 0;
 
-    // auto handle = dev_ctx.cusolver_dn_handle();
     auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
     PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnSgeqrf_bufferSize(
         handle, m, n, a, lda, &lwork));
@@ -555,7 +551,6 @@ void BatchedGeqrf<GPUContext, double>(const GPUContext& dev_ctx,
                                       int tau_stride) {
   int lwork = 0;
 
-  // auto handle = dev_ctx.cusolver_dn_handle();
   auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
   PADDLE_ENFORCE_GPU_SUCCESS(
       phi::dynload::cusolverDnDgeqrf_bufferSize(handle, m, n, a, lda, &lwork));
@@ -599,35 +594,33 @@ void BatchedGeqrf<GPUContext, double>(const GPUContext& dev_ctx,
 }
 
 template <>
-void BatchedGeqrf<GPUContext, phi::dtype::complex<float>>(
-    const GPUContext& dev_ctx,
-    int batch_size,
-    int m,
-    int n,
-    phi::dtype::complex<float>* a,
-    int lda,
-    phi::dtype::complex<float>* tau,
-    int a_stride,
-    int tau_stride) {
+void BatchedGeqrf<GPUContext, phi::complex64>(const GPUContext& dev_ctx,
+                                              int batch_size,
+                                              int m,
+                                              int n,
+                                              phi::complex64* a,
+                                              int lda,
+                                              phi::complex64* tau,
+                                              int a_stride,
+                                              int tau_stride) {
   int lwork = 0;
 
-  // auto handle = dev_ctx.cusolver_dn_handle();
   auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
   PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnCgeqrf_bufferSize(
       handle, m, n, reinterpret_cast<cuComplex*>(a), lda, &lwork));
 
   DenseTensor workspace = DenseTensor();
   workspace.Resize(common::make_ddim({lwork}));
-  phi::dtype::complex<float>* workspace_ptr =
-      dev_ctx.template Alloc<phi::dtype::complex<float>>(&workspace);
+  phi::complex64* workspace_ptr =
+      dev_ctx.template Alloc<phi::complex64>(&workspace);
 
   DenseTensor info = DenseTensor();
   info.Resize(common::make_ddim({1}));
   int* info_d = dev_ctx.template Alloc<int>(&info);
 
   for (int i = 0; i < batch_size; ++i) {
-    phi::dtype::complex<float>* a_working_ptr = &a[i * a_stride];
-    phi::dtype::complex<float>* tau_working_ptr = &tau[i * tau_stride];
+    phi::complex64* a_working_ptr = &a[i * a_stride];
+    phi::complex64* tau_working_ptr = &tau[i * tau_stride];
     // compute geqrf
     PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnCgeqrf(
         handle,
@@ -657,35 +650,33 @@ void BatchedGeqrf<GPUContext, phi::dtype::complex<float>>(
 }
 
 template <>
-void BatchedGeqrf<GPUContext, phi::dtype::complex<double>>(
-    const GPUContext& dev_ctx,
-    int batch_size,
-    int m,
-    int n,
-    phi::dtype::complex<double>* a,
-    int lda,
-    phi::dtype::complex<double>* tau,
-    int a_stride,
-    int tau_stride) {
+void BatchedGeqrf<GPUContext, phi::complex128>(const GPUContext& dev_ctx,
+                                               int batch_size,
+                                               int m,
+                                               int n,
+                                               phi::complex128* a,
+                                               int lda,
+                                               phi::complex128* tau,
+                                               int a_stride,
+                                               int tau_stride) {
   int lwork = 0;
 
-  // auto handle = dev_ctx.cusolver_dn_handle();
   auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
   PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnZgeqrf_bufferSize(
       handle, m, n, reinterpret_cast<cuDoubleComplex*>(a), lda, &lwork));
 
   DenseTensor workspace = DenseTensor();
   workspace.Resize(common::make_ddim({lwork}));
-  phi::dtype::complex<double>* workspace_ptr =
-      dev_ctx.template Alloc<phi::dtype::complex<double>>(&workspace);
+  phi::complex128* workspace_ptr =
+      dev_ctx.template Alloc<phi::complex128>(&workspace);
 
   DenseTensor info = DenseTensor();
   info.Resize(common::make_ddim({1}));
   int* info_d = dev_ctx.template Alloc<int>(&info);
 
   for (int i = 0; i < batch_size; ++i) {
-    phi::dtype::complex<double>* a_working_ptr = &a[i * a_stride];
-    phi::dtype::complex<double>* tau_working_ptr = &tau[i * tau_stride];
+    phi::complex128* a_working_ptr = &a[i * a_stride];
+    phi::complex128* tau_working_ptr = &tau[i * tau_stride];
     // compute geqrf
     PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnZgeqrf(
         handle,
@@ -727,7 +718,6 @@ void BatchedOrgqr<GPUContext, float>(const GPUContext& dev_ctx,
                                      int tau_stride) {
   int lwork = 0;
 
-  // auto handle = dev_ctx.cusolver_dn_handle();
   auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
   PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnSorgqr_bufferSize(
       handle, m, n, k, a, lda, tau, &lwork));
@@ -784,7 +774,6 @@ void BatchedOrgqr<GPUContext, double>(const GPUContext& dev_ctx,
                                       int tau_stride) {
   int lwork = 0;
 
-  // auto handle = dev_ctx.cusolver_dn_handle();
   auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
   PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnDorgqr_bufferSize(
       handle, m, n, k, a, lda, tau, &lwork));
@@ -829,20 +818,18 @@ void BatchedOrgqr<GPUContext, double>(const GPUContext& dev_ctx,
 }
 
 template <>
-void BatchedOrgqr<GPUContext, phi::dtype::complex<float>>(
-    const GPUContext& dev_ctx,
-    int batch_size,
-    int m,
-    int n,
-    int k,
-    phi::dtype::complex<float>* a,
-    int lda,
-    phi::dtype::complex<float>* tau,
-    int a_stride,
-    int tau_stride) {
+void BatchedOrgqr<GPUContext, phi::complex64>(const GPUContext& dev_ctx,
+                                              int batch_size,
+                                              int m,
+                                              int n,
+                                              int k,
+                                              phi::complex64* a,
+                                              int lda,
+                                              phi::complex64* tau,
+                                              int a_stride,
+                                              int tau_stride) {
   int lwork = 0;
 
-  // auto handle = dev_ctx.cusolver_dn_handle();
   auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
   PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnCungqr_bufferSize(
       handle,
@@ -856,16 +843,16 @@ void BatchedOrgqr<GPUContext, phi::dtype::complex<float>>(
 
   DenseTensor workspace = DenseTensor();
   workspace.Resize(common::make_ddim({lwork}));
-  phi::dtype::complex<float>* workspace_ptr =
-      dev_ctx.template Alloc<phi::dtype::complex<float>>(&workspace);
+  phi::complex64* workspace_ptr =
+      dev_ctx.template Alloc<phi::complex64>(&workspace);
 
   DenseTensor info = DenseTensor();
   info.Resize(common::make_ddim({1}));
   int* info_d = dev_ctx.template Alloc<int>(&info);
 
   for (int i = 0; i < batch_size; ++i) {
-    phi::dtype::complex<float>* a_working_ptr = &a[i * a_stride];
-    phi::dtype::complex<float>* tau_working_ptr = &tau[i * tau_stride];
+    phi::complex64* a_working_ptr = &a[i * a_stride];
+    phi::complex64* tau_working_ptr = &tau[i * tau_stride];
     // compute orggr
     PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnCungqr(
         handle,
@@ -896,20 +883,18 @@ void BatchedOrgqr<GPUContext, phi::dtype::complex<float>>(
 }
 
 template <>
-void BatchedOrgqr<GPUContext, phi::dtype::complex<double>>(
-    const GPUContext& dev_ctx,
-    int batch_size,
-    int m,
-    int n,
-    int k,
-    phi::dtype::complex<double>* a,
-    int lda,
-    phi::dtype::complex<double>* tau,
-    int a_stride,
-    int tau_stride) {
+void BatchedOrgqr<GPUContext, phi::complex128>(const GPUContext& dev_ctx,
+                                               int batch_size,
+                                               int m,
+                                               int n,
+                                               int k,
+                                               phi::complex128* a,
+                                               int lda,
+                                               phi::complex128* tau,
+                                               int a_stride,
+                                               int tau_stride) {
   int lwork = 0;
 
-  // auto handle = dev_ctx.cusolver_dn_handle();
   auto handle = GetCusolverDnHandle(dev_ctx.stream(), dev_ctx.GetPlace());
   PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnZungqr_bufferSize(
       handle,
@@ -923,16 +908,16 @@ void BatchedOrgqr<GPUContext, phi::dtype::complex<double>>(
 
   DenseTensor workspace = DenseTensor();
   workspace.Resize(common::make_ddim({lwork}));
-  phi::dtype::complex<double>* workspace_ptr =
-      dev_ctx.template Alloc<phi::dtype::complex<double>>(&workspace);
+  phi::complex128* workspace_ptr =
+      dev_ctx.template Alloc<phi::complex128>(&workspace);
 
   DenseTensor info = DenseTensor();
   info.Resize(common::make_ddim({1}));
   int* info_d = dev_ctx.template Alloc<int>(&info);
 
   for (int i = 0; i < batch_size; ++i) {
-    phi::dtype::complex<double>* a_working_ptr = &a[i * a_stride];
-    phi::dtype::complex<double>* tau_working_ptr = &tau[i * tau_stride];
+    phi::complex128* a_working_ptr = &a[i * a_stride];
+    phi::complex128* tau_working_ptr = &tau[i * tau_stride];
     // compute orggr
     PADDLE_ENFORCE_GPU_SUCCESS(phi::dynload::cusolverDnZungqr(
         handle,
@@ -965,11 +950,15 @@ void BatchedOrgqr<GPUContext, phi::dtype::complex<double>>(
 
 }  // namespace phi
 
+#ifdef PADDLE_WITH_HIP
+PD_REGISTER_KERNEL(qr, GPU, ALL_LAYOUT, phi::QrKernel, float, double) {}
+#else
 PD_REGISTER_PLUGIN_KERNEL(qr,
                           metax_gpu,
                           ALL_LAYOUT,
                           phi::QrKernel,
                           float,
                           double,
-                          phi::dtype::complex<float>,
-                          phi::dtype::complex<double>) {}
+                          phi::complex64,
+                          phi::complex128) {}
+#endif
