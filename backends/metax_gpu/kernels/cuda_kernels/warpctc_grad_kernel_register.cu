@@ -17,7 +17,7 @@
 #include "paddle/phi/core/kernel_registry.h"
 #include "paddle/phi/kernels/warpctc_grad_kernel.h"
 
-PD_REGISTER_PLUGIN_KERNEL(warpctc_grad,
+PD_CUSTOM_KERNEL_REGISTER(warpctc_grad,
                           metax_gpu,
                           ALL_LAYOUT,
                           phi::WarpctcGradKernel,

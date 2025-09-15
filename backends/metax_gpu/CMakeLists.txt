@@ -37,6 +37,8 @@ include(cblas)
 include(flashattn)
 include(cutlass)
 include(dgc)
+include(warpctc)
+include(warprnnt)
 
 set(PLUGIN_VERSION ${PADDLE_VERSION})
 
