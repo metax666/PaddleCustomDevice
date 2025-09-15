@@ -32,6 +32,7 @@ struct FusedGateMoeParams {
   int32_t experts_min;
   int32_t experts_max;
   int32_t block_size;
+  int32_t chunk_size;
 
   bool moe_use_gate_correction_bias;
   bool norm_topk_prob;
@@ -55,12 +56,12 @@ static const std::map<std::string_view, MoeActivationMode_t> activationModeMap =
      {"relu", MoeActivationMode_t::MOE_ACTIVATION_MODE_RELU},
      {"silu", MoeActivationMode_t::MOE_ACTIVATION_MODE_SILU}};
 
-std::shared_ptr<ns_MoeKernel::ParamsV3> FillMixtureOfExpertsParams(
+std::shared_ptr<ns_MoeKernel::ParamsV4> FillMixtureOfExpertsParams(
     const FusedGateMoeParams& config) {
-  auto moe_params = std::make_shared<ns_MoeKernel::ParamsV3>();
+  auto moe_params = std::make_shared<ns_MoeKernel::ParamsV4>();
   memset(reinterpret_cast<void*>(moe_params.get()),
          0x00,
-         sizeof(ns_MoeKernel::ParamsV3));
+         sizeof(ns_MoeKernel::ParamsV4));
 
   std::string activation_str(config.activation_mode);
   auto activationIterator = activationModeMap.find(activation_str);
@@ -82,7 +83,8 @@ std::shared_ptr<ns_MoeKernel::ParamsV3> FillMixtureOfExpertsParams(
            ? MoeFlags_t::MOE_FLAGS_BLOCKWISE_WEIGHT_QUANTIZATION
            : 0);
   moe_params->block_size = config.block_size;
-
+  moe_params->total_experts = config.num_experts;
+  moe_params->chunk_size = config.chunk_size;
   return moe_params;
 }
 
@@ -344,11 +346,9 @@ void FusedGateMoeKernel(
     const phi::DenseTensor& hidden_states,
     const phi::DenseTensor& gate_out,
     const paddle::optional<phi::DenseTensor>& gate_correction_bias,
-    const phi::DenseTensor& gate_up_weights,
-    const phi::DenseTensor& down_weights,
-    const paddle::optional<phi::DenseTensor>& intermediate_hidden_states_scales,
-    const paddle::optional<phi::DenseTensor>& gate_up_weights_scales,
-    const paddle::optional<phi::DenseTensor>& down_weights_scales,
+    const std::vector<phi::DenseTensor>& gate_up_weights,
+    const std::vector<phi::DenseTensor>& down_weights,
+    const paddle::optional<std::vector<phi::DenseTensor>>& scales,
     phi::DenseTensor* final_hidden_states,
     const int top_k,
     const bool moe_use_gate_correction_bias,
@@ -359,21 +359,16 @@ void FusedGateMoeKernel(
     const int experts_max,
     const bool measurement_mode,
     const bool dynamic_scale,
-    const int block_size) {
-  std::vector<int64_t> gate_up_weights_dims =
-      phi::vectorize<int64_t>(gate_up_weights.dims());
-  std::vector<int64_t> down_weights_dims =
-      phi::vectorize<int64_t>(down_weights.dims());
+    const int block_size,
+    const int chunk_size) {
   FusedGateMoeParams params;
   memset(reinterpret_cast<void*>(&params), 0x00, sizeof(FusedGateMoeParams));
   params.topk = top_k;
   params.moe_use_gate_correction_bias = moe_use_gate_correction_bias;
   params.norm_topk_prob = norm_topk_prob;
   params.permuted_weights = permuted_weights;
-  // TODO(yanfeich): add optional up_weights
-  params.fused_gemm = (gate_up_weights_dims[2] == down_weights_dims[1] * 2);
-  params.measurement_mode = measurement_mode;
-  params.num_experts = gate_up_weights_dims[0];
+  params.fused_gemm = (gate_up_weights.size() == down_weights.size());
+  params.num_experts = down_weights.size();
   params.experts_min = experts_min;
   params.experts_max = experts_max;
   params.dynamic_scale = dynamic_scale;
@@ -381,6 +376,7 @@ void FusedGateMoeKernel(
   strncpy(params.activation_mode,
           activation.c_str(),
           sizeof(params.activation_mode) - 1);
+  params.chunk_size = chunk_size;
 
   ConvertTensors ct;
   ct.Add(hidden_states);
@@ -388,18 +384,16 @@ void FusedGateMoeKernel(
   if (moe_use_gate_correction_bias) {
     ct.Add(gate_correction_bias.get());
   }
-
-  ct.AddN(gate_up_weights);
-  ct.AddN(down_weights);
-
-  if (intermediate_hidden_states_scales) {
-    ct.AddN(intermediate_hidden_states_scales.get());
+  for (const auto& t : gate_up_weights) {
+    ct.Add(t);
   }
-  if (gate_up_weights_scales) {
-    ct.AddN(gate_up_weights_scales.get());
+  for (const auto& t : down_weights) {
+    ct.Add(t);
   }
-  if (down_weights_scales) {
-    ct.AddN(down_weights_scales.get());
+  if (scales) {
+    for (const auto& t : scales.get()) {
+      ct.Add(t);
+    }
   }
 
   ct.Add(*final_hidden_states, false);
@@ -434,11 +428,9 @@ void CallFusedGateMoeKernel(
     const phi::DenseTensor& hidden_states,
     const phi::DenseTensor& gate_out,
     const paddle::optional<phi::DenseTensor>& gate_correction_bias,
-    const phi::DenseTensor& gate_up_weights,
-    const phi::DenseTensor& down_weights,
-    const paddle::optional<phi::DenseTensor>& intermediate_hidden_states_scales,
-    const paddle::optional<phi::DenseTensor>& gate_up_weights_scales,
-    const paddle::optional<phi::DenseTensor>& down_weights_scales,
+    const std::vector<phi::DenseTensor>& gate_up_weights,
+    const std::vector<phi::DenseTensor>& down_weights,
+    const paddle::optional<std::vector<phi::DenseTensor>>& scales,
     phi::DenseTensor* final_hidden_states,
     const int top_k,
     const bool moe_use_gate_correction_bias,
@@ -450,7 +442,8 @@ void CallFusedGateMoeKernel(
     const bool is_bf16_moe_input,
     const bool measurement_mode,
     const bool dynamic_scale,
-    const int block_size) {
+    const int block_size,
+    const int chunk_size) {
   if (hidden_states.dtype() == phi::DataType::BFLOAT16) {
     if (is_bf16_moe_input) {
       // bf16 & blockwise fp8
@@ -462,9 +455,7 @@ void CallFusedGateMoeKernel(
           gate_correction_bias,
           gate_up_weights,
           down_weights,
-          intermediate_hidden_states_scales,
-          gate_up_weights_scales,
-          down_weights_scales,
+          scales,
           final_hidden_states,
           top_k,
           moe_use_gate_correction_bias,
@@ -475,7 +466,8 @@ void CallFusedGateMoeKernel(
           experts_max,
           measurement_mode,
           dynamic_scale,
-          block_size);
+          block_size,
+          chunk_size);
     } else {
       custom_kernel::FusedGateMoeKernel<phi::dtype::bfloat16,
                                         phi::dtype::float8_e4m3fn>(
@@ -485,9 +477,7 @@ void CallFusedGateMoeKernel(
           gate_correction_bias,
           gate_up_weights,
           down_weights,
-          intermediate_hidden_states_scales,
-          gate_up_weights_scales,
-          down_weights_scales,
+          scales,
           final_hidden_states,
           top_k,
           moe_use_gate_correction_bias,
@@ -498,7 +488,8 @@ void CallFusedGateMoeKernel(
           experts_max,
           measurement_mode,
           dynamic_scale,
-          block_size);
+          block_size,
+          chunk_size);
     }
   } else {
     throw std::runtime_error("Unsupported data type for FusedGateMoeKernel");
@@ -509,15 +500,16 @@ std::vector<paddle::Tensor> FusedGateMoeForward(
     const paddle::Tensor& hidden_states,
     const paddle::Tensor& gate_out,
     const paddle::optional<paddle::Tensor>& gate_correction_bias,
-    const paddle::Tensor& gate_up_weights,
-    const paddle::Tensor& down_weights,
+    const std::vector<paddle::Tensor>& gate_up_weights,
+    const std::vector<paddle::Tensor>& down_weights,
     const int top_k,
     const bool moe_use_gate_correction_bias,
     const bool norm_topk_prob,
     const bool permuted_weights,
     const std::string& activation,
     const int experts_min,
-    const int experts_max) {
+    const int experts_max,
+    const int chunk_size) {
   auto dev_ctx = static_cast<const phi::CustomContext*>(
       paddle::experimental::DeviceContextPool::Instance().Get(
           hidden_states.place()));
@@ -535,10 +527,16 @@ std::vector<paddle::Tensor> FusedGateMoeForward(
         paddle::optional<phi::DenseTensor>(*gate_correction_bias_dt);
   }
 
-  auto gate_up_weights_tensor =
-      static_cast<const phi::DenseTensor*>(gate_up_weights.impl().get());
-  auto down_weights_tensor =
-      static_cast<const phi::DenseTensor*>(down_weights.impl().get());
+  std::vector<phi::DenseTensor> gate_up_weights_vec;
+  for (const auto& t : gate_up_weights) {
+    gate_up_weights_vec.push_back(
+        *static_cast<const phi::DenseTensor*>(t.impl().get()));
+  }
+  std::vector<phi::DenseTensor> down_weights_vec;
+  for (const auto& t : down_weights) {
+    down_weights_vec.push_back(
+        *static_cast<const phi::DenseTensor*>(t.impl().get()));
+  }
 
   std::shared_ptr<phi::DenseTensor> final_hidden_states =
       std::make_shared<phi::DenseTensor>();
@@ -550,11 +548,9 @@ std::vector<paddle::Tensor> FusedGateMoeForward(
       *hidden_states_tensor,
       *gate_out_tensor,
       gate_correction_tensor,
-      *gate_up_weights_tensor,
-      *down_weights_tensor,
-      paddle::optional<phi::DenseTensor>(), /* int..hid..st.._scales_tensor */
-      paddle::optional<phi::DenseTensor>(), /* gate_up_weights_scales_tensor */
-      paddle::optional<phi::DenseTensor>(), /* down_weights_scales_tensor */
+      gate_up_weights_vec,
+      down_weights_vec,
+      paddle::optional<std::vector<phi::DenseTensor>>(), /* scales */
       final_hidden_states.get(),
       top_k,
       moe_use_gate_correction_bias,
@@ -566,7 +562,8 @@ std::vector<paddle::Tensor> FusedGateMoeForward(
       true,  /* moe input = bf16 */
       false, /* measurement_mode, so far not need */
       false, /* dynamic_scale */
-      -1 /* block_size */);
+      -1 /* block_size */,
+      chunk_size /* chunk_size */);
 
   return {paddle::Tensor(final_hidden_states)};
 }
@@ -575,18 +572,20 @@ std::vector<paddle::Tensor> FusedGateMoeFP8Forward(
     const paddle::Tensor& hidden_states,
     const paddle::Tensor& gate_out,
     const paddle::optional<paddle::Tensor>& gate_correction_bias,
-    const paddle::Tensor& gate_up_weights,
-    const paddle::Tensor& down_weights,
-    const paddle::optional<paddle::Tensor>& intermediate_hidden_states_scales,
-    const paddle::Tensor& gate_up_weights_scales,
-    const paddle::Tensor& down_weights_scales,
+    const std::vector<paddle::Tensor>& gate_up_weights,
+    const std::vector<paddle::Tensor>& down_weights,
+    const paddle::optional<std::vector<paddle::Tensor>>&
+        intermediate_hidden_states_scales,
+    const std::vector<paddle::Tensor>& gate_up_weights_scales,
+    const std::vector<paddle::Tensor>& down_weights_scales,
     const int top_k,
     const bool moe_use_gate_correction_bias,
     const bool norm_topk_prob,
     const bool permuted_weights,
     const std::string& activation,
     const int experts_min,
-    const int experts_max) {
+    const int experts_max,
+    const int chunk_size) {
   auto dev_ctx = static_cast<const phi::CustomContext*>(
       paddle::experimental::DeviceContextPool::Instance().Get(
           hidden_states.place()));
@@ -604,34 +603,32 @@ std::vector<paddle::Tensor> FusedGateMoeFP8Forward(
         paddle::optional<phi::DenseTensor>(*gate_correction_bias_dt);
   }
 
-  auto gate_up_weights_tensor =
-      static_cast<const phi::DenseTensor*>(gate_up_weights.impl().get());
-  auto down_weights_tensor =
-      static_cast<const phi::DenseTensor*>(down_weights.impl().get());
-
-  bool dynamic_scale = true;
-  auto intermediate_hidden_states_scales_tensor =
-      paddle::optional<phi::DenseTensor>();
-  if (intermediate_hidden_states_scales) {
-    dynamic_scale = false;
-    auto intermediate_hidden_states_scales_dt = static_cast<phi::DenseTensor*>(
-        intermediate_hidden_states_scales->impl().get());
-    intermediate_hidden_states_scales_tensor =
-        paddle::optional<phi::DenseTensor>(
-            *intermediate_hidden_states_scales_dt);
+  std::vector<phi::DenseTensor> gate_up_weights_vec;
+  for (const auto& t : gate_up_weights) {
+    gate_up_weights_vec.push_back(
+        *static_cast<const phi::DenseTensor*>(t.impl().get()));
+  }
+  std::vector<phi::DenseTensor> down_weights_vec;
+  for (const auto& t : down_weights) {
+    down_weights_vec.push_back(
+        *static_cast<const phi::DenseTensor*>(t.impl().get()));
   }
 
-  auto gate_up_weights_scales_tensor = paddle::optional<phi::DenseTensor>();
-  auto gate_up_weights_scales_dt =
-      static_cast<const phi::DenseTensor*>(gate_up_weights_scales.impl().get());
-  gate_up_weights_scales_tensor =
-      paddle::optional<phi::DenseTensor>(*gate_up_weights_scales_dt);
-
-  auto down_weights_scales_tensor = paddle::optional<phi::DenseTensor>();
-  auto down_weights_scales_dt =
-      static_cast<const phi::DenseTensor*>(down_weights_scales.impl().get());
-  down_weights_scales_tensor =
-      paddle::optional<phi::DenseTensor>(*down_weights_scales_dt);
+  bool dynamic_scale = true;
+  std::vector<phi::DenseTensor> scales_vec;
+  if (intermediate_hidden_states_scales) {
+    dynamic_scale = false;
+    for (const auto& t : intermediate_hidden_states_scales.get()) {
+      scales_vec.push_back(
+          *static_cast<const phi::DenseTensor*>(t.impl().get()));
+    }
+  }
+  for (const auto& t : gate_up_weights_scales) {
+    scales_vec.push_back(*static_cast<const phi::DenseTensor*>(t.impl().get()));
+  }
+  for (const auto& t : down_weights_scales) {
+    scales_vec.push_back(*static_cast<const phi::DenseTensor*>(t.impl().get()));
+  }
 
   std::shared_ptr<phi::DenseTensor> final_hidden_states =
       std::make_shared<phi::DenseTensor>();
@@ -643,11 +640,9 @@ std::vector<paddle::Tensor> FusedGateMoeFP8Forward(
       *hidden_states_tensor,
       *gate_out_tensor,
       gate_correction_tensor,
-      *gate_up_weights_tensor,
-      *down_weights_tensor,
-      intermediate_hidden_states_scales_tensor,
-      gate_up_weights_scales_tensor,
-      down_weights_scales_tensor,
+      gate_up_weights_vec,
+      down_weights_vec,
+      scales_vec,
       final_hidden_states.get(),
       top_k,
       moe_use_gate_correction_bias,
@@ -659,7 +654,8 @@ std::vector<paddle::Tensor> FusedGateMoeFP8Forward(
       false, /* moe input = fp8*/
       false, /* measurement_mode, so far not supported on FP8 */
       dynamic_scale,
-      -1 /* block_size */);
+      -1 /* block_size */,
+      chunk_size);
   return {paddle::Tensor(final_hidden_states)};
 }
 
@@ -667,10 +663,10 @@ std::vector<paddle::Tensor> FusedGateMoeBlockWiseFP8Forward(
     const paddle::Tensor& hidden_states,
     const paddle::Tensor& gate_out,
     const paddle::optional<paddle::Tensor>& gate_correction_bias,
-    const paddle::Tensor& gate_up_weights,
-    const paddle::Tensor& down_weights,
-    const paddle::Tensor& gate_up_weights_scales,
-    const paddle::Tensor& down_weights_scales,
+    const std::vector<paddle::Tensor>& gate_up_weights,
+    const std::vector<paddle::Tensor>& down_weights,
+    const std::vector<paddle::Tensor>& gate_up_weights_scales,
+    const std::vector<paddle::Tensor>& down_weights_scales,
     const int top_k,
     const bool moe_use_gate_correction_bias,
     const bool norm_topk_prob,
@@ -678,7 +674,8 @@ std::vector<paddle::Tensor> FusedGateMoeBlockWiseFP8Forward(
     const std::string& activation,
     const int experts_min,
     const int experts_max,
-    const int block_size) {
+    const int block_size,
+    const int chunk_size) {
   auto dev_ctx = static_cast<const phi::CustomContext*>(
       paddle::experimental::DeviceContextPool::Instance().Get(
           hidden_states.place()));
@@ -696,22 +693,24 @@ std::vector<paddle::Tensor> FusedGateMoeBlockWiseFP8Forward(
         paddle::optional<phi::DenseTensor>(*gate_correction_bias_dt);
   }
 
-  auto gate_up_weights_tensor =
-      static_cast<const phi::DenseTensor*>(gate_up_weights.impl().get());
-  auto down_weights_tensor =
-      static_cast<const phi::DenseTensor*>(down_weights.impl().get());
+  std::vector<phi::DenseTensor> gate_up_weights_vec;
+  for (const auto& t : gate_up_weights) {
+    gate_up_weights_vec.push_back(
+        *static_cast<const phi::DenseTensor*>(t.impl().get()));
+  }
+  std::vector<phi::DenseTensor> down_weights_vec;
+  for (const auto& t : down_weights) {
+    down_weights_vec.push_back(
+        *static_cast<const phi::DenseTensor*>(t.impl().get()));
+  }
 
-  auto gate_up_weights_scales_tensor = paddle::optional<phi::DenseTensor>();
-  auto gate_up_weights_scales_dt =
-      static_cast<const phi::DenseTensor*>(gate_up_weights_scales.impl().get());
-  gate_up_weights_scales_tensor =
-      paddle::optional<phi::DenseTensor>(*gate_up_weights_scales_dt);
-
-  auto down_weights_scales_tensor = paddle::optional<phi::DenseTensor>();
-  auto down_weights_scales_dt =
-      static_cast<const phi::DenseTensor*>(down_weights_scales.impl().get());
-  down_weights_scales_tensor =
-      paddle::optional<phi::DenseTensor>(*down_weights_scales_dt);
+  std::vector<phi::DenseTensor> scales_vec;
+  for (const auto& t : gate_up_weights_scales) {
+    scales_vec.push_back(*static_cast<const phi::DenseTensor*>(t.impl().get()));
+  }
+  for (const auto& t : down_weights_scales) {
+    scales_vec.push_back(*static_cast<const phi::DenseTensor*>(t.impl().get()));
+  }
 
   std::shared_ptr<phi::DenseTensor> final_hidden_states =
       std::make_shared<phi::DenseTensor>();
@@ -723,11 +722,9 @@ std::vector<paddle::Tensor> FusedGateMoeBlockWiseFP8Forward(
       *hidden_states_tensor,
       *gate_out_tensor,
       gate_correction_tensor,
-      *gate_up_weights_tensor,
-      *down_weights_tensor,
-      paddle::optional<phi::DenseTensor>(), /* scales */
-      gate_up_weights_scales_tensor,
-      down_weights_scales_tensor,
+      gate_up_weights_vec,
+      down_weights_vec,
+      scales_vec,
       final_hidden_states.get(),
       top_k,
       moe_use_gate_correction_bias,
@@ -739,7 +736,8 @@ std::vector<paddle::Tensor> FusedGateMoeBlockWiseFP8Forward(
       true,  /* moe input = bf16 */
       false, /* measurement_mode, so far not supported on FP8 */
       false, /*dynamic_scale*/
-      block_size);
+      block_size,
+      chunk_size);
   return {paddle::Tensor(final_hidden_states)};
 }
 
@@ -770,8 +768,8 @@ PD_BUILD_OP(fused_gate_moe)
     .Inputs({"hidden_states",
              "gate_out",
              paddle::Optional("gate_correction_bias"),
-             "gate_up_weights",
-             "down_weights"})
+             paddle::Vec("gate_up_weights"),
+             paddle::Vec("down_weights")})
     .Outputs({"final_hidden_states"})
     .Attrs({"top_k: int",
             "moe_use_gate_correction_bias: bool",
@@ -779,7 +777,8 @@ PD_BUILD_OP(fused_gate_moe)
             "permuted_weights: bool",
             "activation: std::string",
             "experts_min: int",
-            "experts_max: int"})
+            "experts_max: int",
+            "chunk_size: int"})
     .SetKernelFn(PD_KERNEL(FusedGateMoeForward))
     .SetInferShapeFn(PD_INFER_SHAPE(FusedGateMoeInferShape))
     .SetInferDtypeFn(PD_INFER_DTYPE(FusedGateMoeInferDtype));
@@ -795,11 +794,11 @@ PD_BUILD_OP(fused_gate_moe_fp8)
     .Inputs({"hidden_states",
              "gate_out",
              paddle::Optional("gate_correction_bias"),
-             "gate_up_weights",
-             "down_weights",
+             paddle::Vec("gate_up_weights"),
+             paddle::Vec("down_weights"),
              paddle::Optional(paddle::Vec("intermediate_hidden_states_scales")),
-             "gate_up_weights_scales",
-             "down_weights_scales"})
+             paddle::Vec("gate_up_weights_scales"),
+             paddle::Vec("down_weights_scales")})
     .Outputs({"final_hidden_states"})
     .Attrs({"top_k: int",
             "moe_use_gate_correction_bias: bool",
@@ -807,7 +806,8 @@ PD_BUILD_OP(fused_gate_moe_fp8)
             "permuted_weights: bool",
             "activation: std::string",
             "experts_min: int",
-            "experts_max: int"})
+            "experts_max: int",
+            "chunk_size: int"})
     .SetKernelFn(PD_KERNEL(FusedGateMoeFP8Forward))
     .SetInferShapeFn(PD_INFER_SHAPE(FusedGateMoeInferShape))
     .SetInferDtypeFn(PD_INFER_DTYPE(FusedGateMoeInferDtype));
@@ -822,10 +822,10 @@ PD_BUILD_OP(fused_gate_moe_blockwise_fp8)
     .Inputs({"hidden_states",
              "gate_out",
              paddle::Optional("gate_correction_bias"),
-             "gate_up_weights",
-             "down_weights",
-             "gate_up_weights_scales",
-             "down_weights_scales"})
+             paddle::Vec("gate_up_weights"),
+             paddle::Vec("down_weights"),
+             paddle::Vec("gate_up_weights_scales"),
+             paddle::Vec("down_weights_scales")})
     .Outputs({"final_hidden_states"})
     .Attrs({"top_k: int",
             "moe_use_gate_correction_bias: bool",
@@ -834,7 +834,8 @@ PD_BUILD_OP(fused_gate_moe_blockwise_fp8)
             "activation: std::string",
             "experts_min: int",
             "experts_max: int",
-            "block_size: int"})
+            "block_size: int",
+            "chunk_size: int"})
     .SetKernelFn(PD_KERNEL(FusedGateMoeBlockWiseFP8Forward))
     .SetInferShapeFn(PD_INFER_SHAPE(FusedGateMoeInferShape))
     .SetInferDtypeFn(PD_INFER_DTYPE(FusedGateMoeInferDtype));
