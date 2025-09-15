@@ -17,5 +17,5 @@
 #include "paddle/phi/core/kernel_registry.h"
 #include "paddle/phi/kernels/warpctc_kernel.h"
 
-PD_REGISTER_PLUGIN_KERNEL(
+PD_CUSTOM_KERNEL_REGISTER(
     warpctc, metax_gpu, ALL_LAYOUT, phi::WarpctcKernel, float, double) {}

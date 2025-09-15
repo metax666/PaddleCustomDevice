@@ -25,3 +25,4 @@ cp patch/tmp/mixed_vector* ../../Paddle/paddle/phi/core
 cd ../../Paddle/
 git apply --verbose ../backends/metax_gpu/patch/paddle.patch
 cd -
+cp -r patch/intrinsics.cuh ../../Paddle/third_party/warpctc/include/contrib/moderngpu/include/device/
