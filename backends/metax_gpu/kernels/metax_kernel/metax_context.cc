@@ -12,27 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kernels/metax_context.h"
+#include "kernels/metax_kernel/metax_context.h"
 
 namespace phi {
 const bool allow_tf32_cublas = []() -> bool {
-    const char* v = std::getenv("ALLOW_TF32_CUBLAS");
-    if (v) {
-      return std::atoi(v);
-    }
-    return false;
+  const char* v = std::getenv("ALLOW_TF32_CUBLAS");
+  if (v) {
+    return std::atoi(v);
+  }
+  return false;
 }();
 
 const bool allow_tf32_cudnn = []() -> bool {
-    const char* v = std::getenv("ALLOW_TF32_CUDNN");
-    if (v) {
-      return std::atoi(v);
-    }
-    return false;
+  const char* v = std::getenv("ALLOW_TF32_CUDNN");
+  if (v) {
+    return std::atoi(v);
+  }
+  return false;
 }();
 
 bool AllowTF32Cublas() { return allow_tf32_cublas; }
-bool AllowTF32Cudnn()  { return allow_tf32_cudnn;  }
+bool AllowTF32Cudnn() { return allow_tf32_cudnn; }
 
 void DnnWorkspaceHandle::RunFuncSync(
     const std::function<void(void*)>& cudnn_func,
