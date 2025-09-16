@@ -32,7 +32,6 @@
 #include "paddle/phi/common/data_type.h"
 #include "paddle/phi/core/dense_tensor.h"
 #include "paddle/utils/optional.h"
-#include "kernels/metax_context.h"
 
 namespace phi {
 namespace fusion {
