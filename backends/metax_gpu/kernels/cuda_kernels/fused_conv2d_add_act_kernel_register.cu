@@ -32,6 +32,7 @@
 #include "paddle/phi/common/data_type.h"
 #include "paddle/phi/core/dense_tensor.h"
 #include "paddle/utils/optional.h"
+#include "kernels/metax_context.h"
 
 namespace phi {
 namespace fusion {
@@ -308,7 +309,7 @@ class CudnnConvDescManager {
       int groups,
       cudnnDataType_t dtype) {
     auto* desc = new phi::backends::gpu::ConvolutionDescriptor();
-    desc->set(dtype, paddings, strides, dilations, true, groups);
+    desc->set(dtype, paddings, strides, dilations, phi::AllowTF32Cudnn(), groups);
     return desc;
   }
 

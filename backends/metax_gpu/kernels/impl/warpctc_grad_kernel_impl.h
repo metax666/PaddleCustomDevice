@@ -16,7 +16,7 @@
 
 #include <vector>
 
-#include "kernels/impl/warpctc.h"
+#include "third_party/warpctc/include/ctc.h"
 #include "paddle/phi/core/dense_tensor.h"
 #include "paddle/phi/kernels/empty_kernel.h"
 #include "paddle/phi/kernels/funcs/eigen/common.h"
