@@ -87,32 +87,34 @@ list(
 list(
   REMOVE_ITEM
   PYTHON_TEST_SCRIPTS
-  ${PADDLE_LEGACY_TEST_PATH}/test_sum_op.py # 精度问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_max_op.py # 受 test_sum_op.py 影响
-  ${PADDLE_LEGACY_TEST_PATH}/test_cumsum_op.py # 精度问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_softmax_with_cross_entropy_op.py # core.cudnnversion
-                                                                   # 适配问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_softmax_op.py # core.cudnnversion 适配问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_elementwise_add_op.py # core.cudnnversion 适配问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_elementwise_pow_op.py # op_test.py 里
-                                                        # self._get_places()
-                                                        # 接口适配问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_index_add_op.py # device == "gpu" 适配问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_elementwise_div_op.py # paddle-gpu 报错一致
-  ${PADDLE_LEGACY_TEST_PATH}/test_stack_op.py # paddle-gpu 报错一致
-  ${PADDLE_LEGACY_TEST_PATH}/test_gather_op.py # core.cudnnversion 适配问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_logical_op.py # paddle-gpu 报错一致
-  ${PADDLE_LEGACY_TEST_PATH}/test_mean_op.py # paddle-gpu 报错一致
-  ${PADDLE_LEGACY_TEST_PATH}/test_transpose_op.py # paddle.device.cuda.get_device_properties
-  ${PADDLE_LEGACY_TEST_PATH}/test_c_embedding_op.py # needs check_grad with fp64
-                                                    # precision
-  ${PADDLE_LEGACY_TEST_PATH}/test_layer_norm_op.py # op_test.py 里
-                                                   # self._get_places() 接口适配问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_slice_op.py # CUDAPinnedPlace 问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_randint_op.py # paddle.device.cuda.get_device_properties
-  ${PADDLE_LEGACY_TEST_PATH}/test_compare_op.py # CUDAPinnedPlace 问题
-  ${PADDLE_LEGACY_TEST_PATH}/test_uniform_random_op.py # paddle.device.cuda.get_device_properties
-)
+  # 精度问题
+  ${PADDLE_LEGACY_TEST_PATH}/test_sum_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_max_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_cumsum_op.py
+  # core.cudnnversion
+  ${PADDLE_LEGACY_TEST_PATH}/test_softmax_with_cross_entropy_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_softmax_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_elementwise_add_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_gather_op.py
+  # op_test.py 里 self._get_places()接口适配问题
+  ${PADDLE_LEGACY_TEST_PATH}/test_elementwise_pow_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_layer_norm_op.py
+  # device == "gpu" 适配问题
+  ${PADDLE_LEGACY_TEST_PATH}/test_index_add_op.py
+  # paddle-gpu 报错一致
+  ${PADDLE_LEGACY_TEST_PATH}/test_elementwise_div_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_stack_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_logical_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_mean_op.py
+  # paddle.device.cuda.get_device_properties
+  ${PADDLE_LEGACY_TEST_PATH}/test_transpose_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_randint_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_uniform_random_op.py
+  # needs check_grad with fp64 precision
+  ${PADDLE_LEGACY_TEST_PATH}/test_c_embedding_op.py
+  # CUDAPinnedPlace 问题
+  ${PADDLE_LEGACY_TEST_PATH}/test_slice_op.py
+  ${PADDLE_LEGACY_TEST_PATH}/test_compare_op.py)
 
 list(REMOVE_DUPLICATES PYTHON_TEST_SCRIPTS)
 foreach(test_script ${PYTHON_TEST_SCRIPTS})
