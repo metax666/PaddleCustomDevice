@@ -12,13 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kernels/metax_kernel/flash_attn_utils.h"
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/calc_reduced_attn_kernel.h"
+#include "paddle/phi/kernels/fusion/gpu/fused_weighted_swiglu_act_quant_kernel.cu"  // NOLINT
 
-PD_CUSTOM_KERNEL_REGISTER(calc_reduced_attn_scores,
+PD_CUSTOM_KERNEL_REGISTER(fused_weighted_swiglu_act_quant,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::CalcReducedAttnScoresKernel,
-                          phi::dtype::float16,
-                          phi::dtype::bfloat16) {}
+                          phi::FusedWeightedSwigluActQuantKernel,
+                          float,
+                          double,
+                          int,
+                          int64_t,
+                          phi::dtype::bfloat16) {
+  kernel->OutputAt(0).SetDataType(phi::DataType::FLOAT8_E4M3FN);
+  kernel->OutputAt(1).SetDataType(phi::DataType::FLOAT32);
+}

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kernels/metax_context.h"
+#include "kernels/metax_kernel/metax_context.h"
 
 namespace phi {
 bool AllowTF32Cudnn() { return false; }

@@ -15,7 +15,7 @@ limitations under the License. */
 #include <algorithm>
 
 #include "kernels/gpudnn/conv_cudnn_v7.h"
-#include "kernels/metax_context.h"
+#include "kernels/metax_kernel/metax_context.h"
 #include "paddle/common/ddim.h"
 #include "paddle/phi/backends/context_pool.h"
 #include "paddle/phi/backends/dynload/cudnn.h"

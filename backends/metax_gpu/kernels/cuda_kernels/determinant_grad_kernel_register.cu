@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "kernels/metax_kernel/flash_attn_utils.h"
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/calc_reduced_attn_kernel.h"
+#include "paddle/phi/kernels/determinant_grad_kernel.h"
+#include "paddle/phi/kernels/impl/determinant_grad_kernel_impl.h"
 
-PD_CUSTOM_KERNEL_REGISTER(calc_reduced_attn_scores,
+PD_CUSTOM_KERNEL_REGISTER(determinant_grad,
                           metax_gpu,
                           ALL_LAYOUT,
-                          phi::CalcReducedAttnScoresKernel,
-                          phi::dtype::float16,
-                          phi::dtype::bfloat16) {}
+                          phi::DeterminantGradKernel,
+                          phi::float16,
+                          float,
+                          double,
+                          phi::complex64,
+                          phi::complex128) {}
