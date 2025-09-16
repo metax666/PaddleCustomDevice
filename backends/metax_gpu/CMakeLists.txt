@@ -736,7 +736,7 @@ add_library(
 target_include_directories(
   ${TARGET_NAME}
   PRIVATE ${PADDLE_SOURCE_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/kernels
-          ${CUDA_INCLUDE_DIRS} ${PADDLE_SOURCE_DIR}/third_party/pybind/include
+          ${CUDA_INCLUDE_DIRS} ${WARPCTC_INCLUDE_DIR} ${WARPRNNT_INCLUDE_DIR} ${PADDLE_SOURCE_DIR}/third_party/pybind/include
           ${PADDLE_SOURCE_DIR}/paddle/phi/api/include/compat)
 
 target_link_libraries(
@@ -749,6 +749,8 @@ target_link_libraries(
   protobuf
   external_error_proto
   dgc
+  ${WARPCTC_LIBRARIES}
+  ${WARPRNNT_LIBRARIES}
   ${PADDLE_CORE_LIB})
 target_link_libraries(${TARGET_NAME} /opt/maca/lib/libmccl.so)
 target_link_libraries(${TARGET_NAME} /opt/maca/lib/libmcFlashAttn.so)

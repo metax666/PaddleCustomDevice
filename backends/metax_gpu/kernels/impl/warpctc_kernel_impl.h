@@ -16,7 +16,7 @@
 
 #include <vector>
 
-#include "kernels/impl/warpctc.h"
+#include "third_party/warpctc/include/ctc.h"
 #include "paddle/phi/core/dense_tensor.h"
 #include "paddle/phi/core/lod_utils.h"
 #include "paddle/phi/core/tensor_utils.h"
@@ -58,7 +58,7 @@ class ComputeCtcLossFunctor<Context, float> {
                          float* costs,
                          void* workspace,
                          ctcOptions options) {
-    return phi::dynload::compute_ctc_loss(activations,
+    return compute_ctc_loss(activations,
                                           gradients,
                                           flat_labels,
                                           label_lengths,
@@ -84,7 +84,7 @@ class ComputeCtcLossFunctor<Context, double> {
                          double* costs,
                          void* workspace,
                          ctcOptions options) {
-    return phi::dynload::compute_ctc_loss_double(
+    return compute_ctc_loss_double(
         activations,
         gradients,
         flat_labels,
@@ -141,14 +141,14 @@ class WarpCTCFunctor {
     ctcStatus_t status = CTC_STATUS_UNKNOWN_ERROR;
     if (sizeof(T) == 4) {
       status =
-          phi::dynload::get_workspace_size(cpu_label_lengths,
+          get_workspace_size(cpu_label_lengths,
                                            cpu_input_lengths,
                                            static_cast<int>(sequence_width),
                                            static_cast<int>(num_sequences),
                                            options_,
                                            &workspace_bytes);
     } else {
-      status = phi::dynload::get_workspace_size_double(
+      status = get_workspace_size_double(
           cpu_label_lengths,
           cpu_input_lengths,
           static_cast<int>(sequence_width),
@@ -162,7 +162,7 @@ class WarpCTCFunctor {
         errors::PreconditionNotMet(
             "warp-ctc [version %d] Error in get_workspace_size: %s",
             warpctc_version_,
-            phi::dynload::ctcGetStatusString(status)));
+            ctcGetStatusString(status)));
     PADDLE_ENFORCE_GT(
         workspace_bytes,
         0UL,
@@ -197,12 +197,12 @@ class WarpCTCFunctor {
         errors::PreconditionNotMet(
             "warp-ctc [version %d] Error in get_workspace_size: %s",
             warpctc_version_,
-            phi::dynload::ctcGetStatusString(status)));
+            ctcGetStatusString(status)));
   }
 
  protected:
   void init(const Context& dev_ctx, const size_t blank) {
-    warpctc_version_ = phi::dynload::get_warpctc_version();
+    warpctc_version_ = get_warpctc_version();
 
     if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU ||
         dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM) {

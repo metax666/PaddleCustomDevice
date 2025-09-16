@@ -137,6 +137,8 @@ get_filename_component(WARPRNNT_LIBRARY_PATH ${WARPRNNT_LIBRARIES} DIRECTORY)
 include_directories(${WARPRNNT_INCLUDE_DIR}) # For warprnnt code to include its
                                              # headers.
 
-add_library(warprnnt INTERFACE)
-# set_property(TARGET warprnnt PROPERTY IMPORTED_LOCATION ${WARPRNNT_LIBRARIES})
-add_dependencies(warprnnt extern_warprnnt)
+add_library(warprnnt SHARED IMPORTED GLOBAL)
+set_target_properties(warprnnt PROPERTIES
+    IMPORTED_LOCATION ${WARPRNNT_LIBRARIES}
+    INTERFACE_INCLUDE_DIRECTORIES ${WARPRNNT_INCLUDE_DIR}
+)
