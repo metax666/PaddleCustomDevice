@@ -161,7 +161,12 @@ void ConvCudnnGradKernelImplV7(
     args1.idesc.set(*transformed_input_grad, layout_tensor);
     args1.wdesc.set(*transformed_filter_channel, layout_tensor, iwo_groups);
     args1.odesc.set(*transformed_output_grad_channel, layout_tensor);
-    args1.cdesc.set(dtype, padding_common, strides, dilations, true, c_groups);
+    args1.cdesc.set(dtype,
+                    padding_common,
+                    strides,
+                    dilations,
+                    phi::AllowTF32Cudnn(),
+                    c_groups);
 
 #ifdef PADDLE_WITH_HIP
     using search1 = SearchAlgorithm<miopenConvBwdDataAlgorithm_t>;
@@ -184,7 +189,12 @@ void ConvCudnnGradKernelImplV7(
     args2.wdesc.set(
         *transformed_filter_grad_channel, layout_tensor, iwo_groups);
     args2.odesc.set(*transformed_output_grad_channel, layout_tensor);
-    args2.cdesc.set(dtype, padding_common, strides, dilations, true, c_groups);
+    args2.cdesc.set(dtype,
+                    padding_common,
+                    strides,
+                    dilations,
+                    phi::AllowTF32Cudnn(),
+                    c_groups);
 #ifdef PADDLE_WITH_HIP
     using search2 = SearchAlgorithm<miopenConvBwdWeightsAlgorithm_t>;
     workspace_size = std::max(workspace_size, search2::GetWorkspaceSize(args2));
@@ -1073,7 +1083,12 @@ void ConvCudnnGradGradKernel(
       args1.idesc.set(transformed_ddX, iwo_group);
       args1.wdesc.set(*W, layout, iwo_group);
       args1.odesc.set(transformed_ddO_channel, iwo_group);
-      args1.cdesc.set(dtype, padding_common, strides, dilations, true, c_group);
+      args1.cdesc.set(dtype,
+                      padding_common,
+                      strides,
+                      dilations,
+                      phi::AllowTF32Cudnn(),
+                      c_group);
 
 #ifdef PADDLE_WITH_HIP
       using search1 = SearchAlgorithm<miopenConvFwdAlgorithm_t>;
@@ -1092,7 +1107,12 @@ void ConvCudnnGradGradKernel(
       args2.idesc.set(transformed_X, iwo_group);
       args2.wdesc.set(*ddW, layout, iwo_group);
       args2.odesc.set(transformed_ddO_channel, iwo_group);
-      args2.cdesc.set(dtype, padding_common, strides, dilations, true, c_group);
+      args2.cdesc.set(dtype,
+                      padding_common,
+                      strides,
+                      dilations,
+                      phi::AllowTF32Cudnn(),
+                      c_group);
 
 #ifdef PADDLE_WITH_HIP
       using search2 = SearchAlgorithm<miopenConvFwdAlgorithm_t>;
@@ -1114,7 +1134,12 @@ void ConvCudnnGradGradKernel(
     args3.idesc.set(transformed_ddX, iwo_group);
     args3.wdesc.set(*dW, layout, iwo_group);
     args3.odesc.set(transformed_dO_channel, iwo_group);
-    args3.cdesc.set(dtype, padding_common, strides, dilations, true, c_group);
+    args3.cdesc.set(dtype,
+                    padding_common,
+                    strides,
+                    dilations,
+                    phi::AllowTF32Cudnn(),
+                    c_group);
 
 #ifdef PADDLE_WITH_HIP
     using search3 = SearchAlgorithm<miopenConvBwdWeightsAlgorithm_t>;
@@ -1136,7 +1161,12 @@ void ConvCudnnGradGradKernel(
     args4.idesc.set(transformed_dX, iwo_group);
     args4.wdesc.set(*ddW, layout, iwo_group);
     args4.odesc.set(transformed_dO_channel, iwo_group);
-    args4.cdesc.set(dtype, padding_common, strides, dilations, true, c_group);
+    args4.cdesc.set(dtype,
+                    padding_common,
+                    strides,
+                    dilations,
+                    phi::AllowTF32Cudnn(),
+                    c_group);
 
 #ifdef PADDLE_WITH_HIP
     using search4 = SearchAlgorithm<miopenConvBwdDataAlgorithm_t>;

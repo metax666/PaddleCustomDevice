@@ -1087,6 +1087,32 @@ index 6f03f76eeb..5fe2c3e7dc 100644
  #include "paddle/phi/kernels/funcs/for_range.h"
  #include "paddle/phi/kernels/funcs/matrix_inverse.h"
  
+diff --git a/paddle/phi/kernels/impl/merged_momentum_impl.h b/paddle/phi/kernels/impl/merged_momentum_impl.h
+index 7b85903776..3f4b298807 100644
+--- a/paddle/phi/kernels/impl/merged_momentum_impl.h
++++ b/paddle/phi/kernels/impl/merged_momentum_impl.h
+@@ -297,7 +297,7 @@ void MergedMomentumInnerCompute(
+                 params_out[idx],
+                 velocities_out[idx]);
+         VLOG(10) << "Launch MergedMomentum cpu kernel.";
+-      } else if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU) {
++      } else if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU || dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM) {
+         phi::funcs::ForRange<Context> for_range(
+             static_cast<const Context &>(dev_ctx), params[idx]->numel());
+         const auto grad_type = grads[idx]->dtype();
+diff --git a/paddle/phi/kernels/impl/momentum_kernel_impl.h b/paddle/phi/kernels/impl/momentum_kernel_impl.h
+index de5bcfc30b..eb2a9714f5 100644
+--- a/paddle/phi/kernels/impl/momentum_kernel_impl.h
++++ b/paddle/phi/kernels/impl/momentum_kernel_impl.h
+@@ -457,7 +457,7 @@ void MomentumDenseImpl(const Context& dev_ctx,
+             regularization_coeff,
+             param_out,
+             velocity_out);
+-  } else if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU) {
++  } else if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU || dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM) {
+     funcs::ForRange<Context> for_range(dev_ctx, param.numel());
+     const auto grad_type = grad.dtype();
+ #define PADDLE_LAUNCH_DENSE_MOMENTUM_KERNEL(__nesterov, __reg_type)     \
 diff --git a/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h b/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
 index 4099d8b506..baef2cd643 100644
 --- a/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h

@@ -16,7 +16,7 @@
 
 #include <vector>
 
-#include "kernels/impl/warprnnt.h"
+#include "third_party/warprnnt/include/rnnt.h"
 #include "paddle/phi/core/dense_tensor.h"
 #include "paddle/phi/core/tensor_utils.h"
 #include "paddle/phi/kernels/empty_kernel.h"
@@ -55,7 +55,7 @@ class ComputeRnntLossFunctor<Context, float> {
                           float* costs,
                           void* workspace,
                           rnntOptions options) {
-    return phi::dynload::compute_rnnt_loss(activations,
+    return compute_rnnt_loss(activations,
                                            gradients,
                                            label,
                                            label_lengths,
@@ -81,7 +81,7 @@ class ComputeRnntLossFunctor<Context, double> {
                           double* costs,
                           void* workspace,
                           rnntOptions options) {
-    return phi::dynload::compute_rnnt_loss_fp64(activations,
+    return compute_rnnt_loss_fp64(activations,
                                                 gradients,
                                                 label,
                                                 label_lengths,
@@ -138,7 +138,8 @@ class WarpRNNTFunctor {
     // There is no memory allocated operations within warp-rnnt.
     rnntStatus_t status = RNNT_STATUS_UNKNOWN_ERROR;
     bool gpu = false;
-    if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU) {
+    if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU ||
+        dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM) {
 #if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
       gpu = true;
 #else
@@ -148,7 +149,7 @@ class WarpRNNTFunctor {
     }
 
     size_t workspace_bytes = 0;
-    status = phi::dynload::get_rnnt_workspace_size(
+    status = get_rnnt_workspace_size(
         maxT, maxU, B, gpu, &workspace_bytes, sizeof(T));
 
     PADDLE_ENFORCE_EQ(
@@ -157,7 +158,7 @@ class WarpRNNTFunctor {
         errors::PreconditionNotMet(
             "warp-rnnt [version %d] Error in get_rnnt_workspace_size: %s",
             warprnnt_version_,
-            phi::dynload::rnntGetStatusString(status)));
+            rnntGetStatusString(status)));
     PADDLE_ENFORCE_GT(
         workspace_bytes,
         0UL,
@@ -189,7 +190,7 @@ class WarpRNNTFunctor {
         errors::PreconditionNotMet(
             "warp-rnnt [version %d] Error in get_workspace_size: %s",
             warprnnt_version_,
-            phi::dynload::rnntGetStatusString(status)));
+            rnntGetStatusString(status)));
   }
 
  protected:
@@ -199,7 +200,7 @@ class WarpRNNTFunctor {
             const size_t blank,
             const float fastemit_lambda,
             const int num_threads) {
-    warprnnt_version_ = phi::dynload::get_warprnnt_version();
+    warprnnt_version_ = get_warprnnt_version();
 
     options_.maxT = maxT;
     options_.maxU = maxU;
@@ -207,7 +208,8 @@ class WarpRNNTFunctor {
     options_.fastemit_lambda = fastemit_lambda;
     options_.batch_first = true;
 
-    if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU) {
+    if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU ||
+        dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM) {
 #if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
       options_.loc = RNNT_GPU;
       options_.stream =
