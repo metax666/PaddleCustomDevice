@@ -24,14 +24,14 @@ pip  uninstall paddlepaddle -y
 git submodule sync --recursive && git submodule update --init --recursive
 
 
-export http_proxy=https://172.17.0.1:1080 https_proxy=http://10.2.192.21:1080
-export
+# export http_proxy=https://172.17.0.1:1080 https_proxy=http://10.2.192.21:1080
+# export
 pip install safetensors==0.6.2 -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple some-package
 # install paddle
 python -m pip install --pre paddlepaddle -i https://www.paddlepaddle.org.cn/packages/nightly/cpu/
 
 
-unset http_proxy https_proxy
+# unset http_proxy https_proxy
 
 # apply patch
 bash change_patch.sh
