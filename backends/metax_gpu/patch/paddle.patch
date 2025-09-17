@@ -16,16 +16,16 @@ index cfada544d4..a690e97d74 100644
 -  set(EIGEN_PATCH_COMMAND ${EIGEN_PATCH_COMMAND} && git apply ${complex_header})
 +  # set(EIGEN_PATCH_COMMAND ${EIGEN_PATCH_COMMAND} && git apply ${complex_header})
  endif()
-
+ 
  set(EIGEN_INCLUDE_DIR ${SOURCE_DIR})
 diff --git a/paddle/fluid/platform/profiler/cupti_data_process.cc b/paddle/fluid/platform/profiler/cupti_data_process.cc
 index bff0f2bf70..9376b5781f 100644
 --- a/paddle/fluid/platform/profiler/cupti_data_process.cc
 +++ b/paddle/fluid/platform/profiler/cupti_data_process.cc
 @@ -16,7 +16,7 @@
-
+ 
  #include <cstdio>
-
+ 
 -#include "paddle/fluid/platform/enforce.h"
 +// #include "paddle/fluid/platform/enforce.h"
  #include "paddle/phi/core/os_info.h"
@@ -76,7 +76,7 @@ index c0080f0a5e..458ca3e2e8 100644
 +  __macro(cudnnDestroyActivationDescriptor);               \
 +  __macro(cudnnSetRNNDescriptor_v6);
  CUDNN_DNN_ROUTINE_EACH(DECLARE_DYNAMIC_LOAD_CUDNN_WRAP)
-
+ 
  #if CUDNN_VERSION >= 7000 && CUDNN_VERSION < 8000
 @@ -152,7 +161,12 @@ CUDNN_DNN_ROUTINE_EACH_R7(DECLARE_DYNAMIC_LOAD_CUDNN_WRAP)
  #define CUDNN_DNN_ROUTINE_EACH_AFTER_TWO_R7(__macro) \
@@ -91,11 +91,11 @@ index c0080f0a5e..458ca3e2e8 100644
 +  __macro(cudnnRNNForwardInferenceEx);
  CUDNN_DNN_ROUTINE_EACH_AFTER_TWO_R7(DECLARE_DYNAMIC_LOAD_CUDNN_WRAP)
  #endif
-
+ 
 @@ -195,40 +209,6 @@ CUDNN_DNN_ROUTINE_EACH_R8(DECLARE_DYNAMIC_LOAD_CUDNN_WRAP)
  CUDNN_DNN_ROUTINE_EACH_FRONTEND(DECLARE_DYNAMIC_LOAD_CUDNN_WRAP)
  #endif
-
+ 
 -#if CUDNN_VERSION < 90000
 -#define CUDNN_DNN_ROUTINE_EACH_REMOVED_IN_E9(__macro) \
 -  __macro(cudnnGetRNNParamsSize);                     \
@@ -132,15 +132,15 @@ index c0080f0a5e..458ca3e2e8 100644
 -#endif
  }  // namespace dynload
  }  // namespace phi
-
+ 
 diff --git a/paddle/phi/backends/dynload/cufft.h b/paddle/phi/backends/dynload/cufft.h
-index 1547909d92..66b2779392 100644
+index 1547909d92..ef20838434 100644
 --- a/paddle/phi/backends/dynload/cufft.h
 +++ b/paddle/phi/backends/dynload/cufft.h
 @@ -1,3 +1,4 @@
 +// 2024 - Modified by MetaX Integrated Circuits (Shanghai) Co., Ltd. All Rights Reserved.
  /* Copyright (c) 2016 PaddlePaddle Authors. All Rights Reserved.
-
+ 
  Licensed under the Apache License, Version 2.0 (the "License");
 @@ -40,7 +41,9 @@ extern void EnforceCUFFTLoaded(const char* fn_name);
          cufft_dso_handle = phi::dynload::GetCUFFTDsoHandle();        \
@@ -160,23 +160,23 @@ index 59e92955c9..d2f8c2da15 100644
 @@ -24,8 +24,8 @@ limitations under the License. */
  #include "paddle/phi/backends/dynload/dynamic_loader.h"
  #include "paddle/phi/common/port.h"
-
+ 
 -namespace phi {
 -namespace dynload {
 +// namespace phi {
 +// namespace dynload {
-
+ 
  extern std::once_flag cupti_dso_flag;
  extern void *cupti_dso_handle;
 @@ -71,7 +71,7 @@ extern void *cupti_dso_handle;
  CUPTI_ROUTINE_EACH(DECLARE_DYNAMIC_LOAD_CUPTI_WRAP);
-
+ 
  #undef DECLARE_DYNAMIC_LOAD_CUPTI_WRAP
 -}  // namespace dynload
 -}  // namespace phi
 +// }  // namespace dynload
 +// }  // namespace phi
-
+ 
 -#endif  // PADDLE_WITH_CUPTI
 +#endif  // PADDLE_WITH_CUPTI
 \ No newline at end of file
@@ -226,32 +226,32 @@ index c5309e7e11..3328571380 100644
      }                                                              \
    };                                                               \
 diff --git a/paddle/phi/backends/gpu/cuda/cuda_device_function.h b/paddle/phi/backends/gpu/cuda/cuda_device_function.h
-index 4ff2e528a9..81421c8ca1 100644
+index 4ff2e528a9..23f7f4b583 100644
 --- a/paddle/phi/backends/gpu/cuda/cuda_device_function.h
 +++ b/paddle/phi/backends/gpu/cuda/cuda_device_function.h
 @@ -1,3 +1,4 @@
 +// 2024 - Modified by MetaX Integrated Circuits (Shanghai) Co., Ltd. All Rights Reserved.
  /* Copyright (c) 2022 PaddlePaddle Authors. All Rights Reserved.
-
+ 
  Licensed under the Apache License, Version 2.0 (the "License");
 @@ -25,7 +26,7 @@ namespace phi {
  namespace backends {
  namespace gpu {
-
+ 
 -#define FULL_WARP_MASK 0xFFFFFFFF
 +#define FULL_WARP_MASK 0xFFFFFFFFFFFFFFFFULL
  #define CREATE_SHFL_MASK(mask, predicate) \
    mask = __ballot_sync(FULL_WARP_MASK, (predicate))
-
+ 
 @@ -45,12 +46,12 @@ namespace gpu {
-
+ 
  template <typename T>
  __forceinline__ __device__ T
 -CudaShuffleDownSync(unsigned mask, T val, int delta, int width = warpSize) {
 +CudaShuffleDownSync(unsigned long long mask, T val, int delta, int width = warpSize) {
    return __shfl_down_sync(mask, val, static_cast<unsigned>(delta), width);
  }
-
+ 
  template <typename T>
 -__forceinline__ __device__ T CudaShuffleXorSync(unsigned mask,
 +__forceinline__ __device__ T CudaShuffleXorSync(unsigned long long mask,
@@ -259,7 +259,7 @@ index 4ff2e528a9..81421c8ca1 100644
                                                  int width = warpSize) {
    return __shfl_xor_sync(mask, val, width);
 @@ -58,14 +59,14 @@ __forceinline__ __device__ T CudaShuffleXorSync(unsigned mask,
-
+ 
  template <>
  __forceinline__ __device__ phi::dtype::float16 CudaShuffleDownSync(
 -    unsigned mask, phi::dtype::float16 val, int delta, int width) {
@@ -267,7 +267,7 @@ index 4ff2e528a9..81421c8ca1 100644
    return phi::dtype::float16(__shfl_down_sync(
        mask, val.to_half(), static_cast<unsigned>(delta), width));
  }
-
+ 
  template <>
  __forceinline__ __device__ phi::dtype::bfloat16 CudaShuffleDownSync(
 -    unsigned mask, phi::dtype::bfloat16 val, int delta, int width) {
@@ -276,7 +276,7 @@ index 4ff2e528a9..81421c8ca1 100644
    return phi::dtype::bfloat16(__shfl_down_sync(
        mask, val.to_nv_bfloat16(), static_cast<unsigned>(delta), width));
 @@ -77,7 +78,7 @@ __forceinline__ __device__ phi::dtype::bfloat16 CudaShuffleDownSync(
-
+ 
  template <>
  __forceinline__ __device__ phi::dtype::complex<float> CudaShuffleDownSync(
 -    unsigned mask, phi::dtype::complex<float> val, int delta, int width) {
@@ -285,7 +285,7 @@ index 4ff2e528a9..81421c8ca1 100644
        mask, static_cast<float>(val.real), static_cast<unsigned>(delta), width));
    float imag = static_cast<float>(__shfl_down_sync(
 @@ -87,7 +88,7 @@ __forceinline__ __device__ phi::dtype::complex<float> CudaShuffleDownSync(
-
+ 
  template <>
  __forceinline__ __device__ phi::dtype::complex<double> CudaShuffleDownSync(
 -    unsigned mask, phi::dtype::complex<double> val, int delta, int width) {
@@ -294,14 +294,14 @@ index 4ff2e528a9..81421c8ca1 100644
        static_cast<double>(__shfl_down_sync(mask,
                                             static_cast<double>(val.real),
 @@ -103,13 +104,13 @@ __forceinline__ __device__ phi::dtype::complex<double> CudaShuffleDownSync(
-
+ 
  template <>
  __forceinline__ __device__ phi::dtype::float16 CudaShuffleXorSync(
 -    unsigned mask, phi::dtype::float16 val, int width) {
 +    unsigned long long mask, phi::dtype::float16 val, int width) {
    return phi::dtype::float16(__shfl_xor_sync(mask, val.to_half(), width));
  }
-
+ 
  template <>
  __forceinline__ __device__ phi::dtype::bfloat16 CudaShuffleXorSync(
 -    unsigned mask, phi::dtype::bfloat16 val, int width) {
@@ -310,7 +310,7 @@ index 4ff2e528a9..81421c8ca1 100644
    return phi::dtype::bfloat16(
        __shfl_xor_sync(mask, val.to_nv_bfloat16(), width));
 @@ -121,7 +122,7 @@ __forceinline__ __device__ phi::dtype::bfloat16 CudaShuffleXorSync(
-
+ 
  template <>
  __forceinline__ __device__ phi::dtype::complex<float> CudaShuffleXorSync(
 -    unsigned mask, phi::dtype::complex<float> val, int width) {
@@ -319,7 +319,7 @@ index 4ff2e528a9..81421c8ca1 100644
        __shfl_xor_sync(mask, static_cast<float>(val.real), width));
    float imag = static_cast<float>(
 @@ -131,7 +132,7 @@ __forceinline__ __device__ phi::dtype::complex<float> CudaShuffleXorSync(
-
+ 
  template <>
  __forceinline__ __device__ phi::dtype::complex<double> CudaShuffleXorSync(
 -    unsigned mask, phi::dtype::complex<double> val, int width) {
@@ -328,14 +328,14 @@ index 4ff2e528a9..81421c8ca1 100644
        __shfl_xor_sync(mask, static_cast<double>(val.real), width));
    double imag = static_cast<double>(
 @@ -141,7 +142,7 @@ __forceinline__ __device__ phi::dtype::complex<double> CudaShuffleXorSync(
-
+ 
  template <typename T>
  __forceinline__ __device__ T
 -CudaShuffleSync(unsigned mask, T val, int src_line, int width = 32) {
 +CudaShuffleSync(unsigned long long mask, T val, int src_line, int width = 32) {
    return __shfl_sync(mask, val, src_line, width);
  }
-
+ 
 @@ -160,7 +161,7 @@ __device__ T reduceSum(T val, int tid, int len) {
    // but most card's warp size is 32.
    const int warpSize = 32;
@@ -343,7 +343,7 @@ index 4ff2e528a9..81421c8ca1 100644
 -  unsigned mask = 0u;
 +  unsigned long long mask = 0ull;
    CREATE_SHFL_MASK(mask, tid < len);
-
+ 
    for (int offset = warpSize / 2; offset > 0; offset /= 2)
 diff --git a/paddle/phi/core/enforce.h b/paddle/phi/core/enforce.h
 index 024a7de73e..1e4cdf16be 100644
@@ -351,7 +351,7 @@ index 024a7de73e..1e4cdf16be 100644
 +++ b/paddle/phi/core/enforce.h
 @@ -45,7 +45,9 @@ limitations under the License. */
  #endif
-
+ 
  #ifdef PADDLE_WITH_CUDA
 -#include "paddle/phi/backends/dynload/cublas.h"
 +// #include "paddle/phi/backends/dynload/../../../../../cublas.h"
@@ -361,9 +361,9 @@ index 024a7de73e..1e4cdf16be 100644
  #include "paddle/phi/backends/dynload/curand.h"
  #include "paddle/phi/backends/dynload/cusolver.h"
 @@ -97,7 +99,7 @@ inline bool is_error(bool stat) { return !stat; }
-
+ 
  void ThrowWarnInternal(const std::string& message);
-
+ 
 -#if defined(__CUDA_ARCH__)
 +#if defined(__CUDACC__)
  // For cuda, the assertions can affect performance and it is therefore
@@ -379,7 +379,7 @@ index 024a7de73e..1e4cdf16be 100644
    } while (0)
  #elif defined(__HIPCC__)
 @@ -757,4 +759,4 @@ inline void retry_sleep(unsigned millisecond) {
-
+ 
  }  // namespace enforce
  using namespace enforce;  // NOLINT
 -}  // namespace phi
@@ -392,7 +392,7 @@ index c646e487d0..325122175c 100644
 @@ -25,8 +25,9 @@
  #else
  #include <cuda_runtime.h>
-
+ 
 -#include "paddle/phi/backends/dynload/cublas.h"
 -#include "paddle/phi/backends/dynload/cublasLt.h"
 +// #include "paddle/phi/backends/dynload/cublas.h"
@@ -400,16 +400,16 @@ index c646e487d0..325122175c 100644
 +// #include "paddle/phi/backends/dynload/cublasLt.h"
  #include "paddle/phi/backends/dynload/cudnn.h"
  #endif
-
+ 
 @@ -90,7 +91,7 @@ DECLARE_TYPE_FOR_GPU(gpuStreamCaptureMode,
-
+ 
  // TODO(Ming Huang): Since there is no blasLt handler,
  // use rocblas_handle for workaround.
 -DECLARE_TYPE_FOR_GPU(blasLtHandle_t, cublasLtHandle_t, rocblas_handle);
 +// DECLARE_TYPE_FOR_GPU(blasLtHandle_t, cublasLtHandle_t, rocblas_handle);
-
+ 
  #undef DECLARE_TYPE_FOR_GPU
-
+ 
 diff --git a/paddle/phi/core/platform/device_context.h b/paddle/phi/core/platform/device_context.h
 index 2d02eb370b..8a7233e34e 100644
 --- a/paddle/phi/core/platform/device_context.h
@@ -430,58 +430,58 @@ index d69eb67d6f..1d8b6e9375 100644
 --- a/paddle/phi/kernels/cpu/index_select_impl.h
 +++ b/paddle/phi/kernels/cpu/index_select_impl.h
 @@ -18,7 +18,7 @@
-
+ 
  #include "paddle/phi/core/dense_tensor.h"
  #include "paddle/phi/core/tensor_utils.h"
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/eigen/common.h"
  #include "paddle/phi/kernels/funcs/math_function.h"
-
+ 
 diff --git a/paddle/phi/kernels/funcs/fc_functor.cu b/paddle/phi/kernels/funcs/fc_functor.cu
 index cb35feee32..64f5bd24ac 100644
 --- a/paddle/phi/kernels/funcs/fc_functor.cu
 +++ b/paddle/phi/kernels/funcs/fc_functor.cu
 @@ -16,12 +16,12 @@ limitations under the License. */
-
+ 
  #include "paddle/phi/backends/all_context.h"
  #include "paddle/phi/kernels/funcs/aligned_vector.h"
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/fc_functor.h"
-
+ 
  #include "paddle/phi/backends/gpu/gpu_launch_config.h"
  #include "paddle/phi/core/dense_tensor.h"
 -#include "paddle/phi/kernels/funcs/blas/blaslt_impl.cu.h"
 +// #include "paddle/phi/kernels/funcs/blas/blaslt_impl.cu.h"
  #include "paddle/phi/kernels/funcs/quant_dequant.h"
  #include "paddle/phi/kernels/matmul_kernel.h"
-
+ 
 diff --git a/paddle/phi/kernels/funcs/gru_compute.cu b/paddle/phi/kernels/funcs/gru_compute.cu
 index 88663ec880..98b93072a3 100644
 --- a/paddle/phi/kernels/funcs/gru_compute.cu
 +++ b/paddle/phi/kernels/funcs/gru_compute.cu
 @@ -12,7 +12,7 @@ limitations under the License. */
  #include "paddle/phi/kernels/funcs/gru_compute.h"
-
+ 
  #include "paddle/phi/backends/gpu/gpu_context.h"
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/detail/gru_gpu_kernel.h"
  #include "paddle/phi/kernels/funcs/detail/gru_kernel.h"
-
+ 
 diff --git a/paddle/phi/kernels/funcs/math/context_project.h b/paddle/phi/kernels/funcs/math/context_project.h
 index 15e1a4a3c3..e4780538d7 100644
 --- a/paddle/phi/kernels/funcs/math/context_project.h
 +++ b/paddle/phi/kernels/funcs/math/context_project.h
 @@ -18,7 +18,7 @@
  #include <vector>
-
+ 
  #include "paddle/phi/core/tensor_utils.h"
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/im2col.h"
-
+ 
  namespace phi {
 diff --git a/paddle/phi/kernels/funcs/matrix_inverse.cu b/paddle/phi/kernels/funcs/matrix_inverse.cu
 index e101224970..a52eb6096f 100644
@@ -489,14 +489,14 @@ index e101224970..a52eb6096f 100644
 +++ b/paddle/phi/kernels/funcs/matrix_inverse.cu
 @@ -15,11 +15,13 @@ limitations under the License. */
  #include "paddle/phi/kernels/funcs/matrix_inverse.h"
-
+ 
  #include "paddle/phi/common/memory_utils.h"
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
-
+ 
  namespace phi {
  namespace funcs {
-
+ 
 +
 +
  template <typename Context, typename T>
@@ -514,28 +514,28 @@ index 558d363b39..05da04b517 100644
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/math_function.h"
  #include "paddle/phi/kernels/funcs/scatter.cu.h"
-
+ 
 diff --git a/paddle/phi/kernels/funcs/multihead_matmul_functor.cu b/paddle/phi/kernels/funcs/multihead_matmul_functor.cu
 index 8b0baf5f5f..260482f124 100644
 --- a/paddle/phi/kernels/funcs/multihead_matmul_functor.cu
 +++ b/paddle/phi/kernels/funcs/multihead_matmul_functor.cu
 @@ -27,7 +27,7 @@ namespace cub = hipcub;
-
+ 
  #include "paddle/phi/kernels/funcs/multihead_matmul_functor.h"
-
+ 
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/math_cuda_utils.h"
-
+ 
  namespace phi {
 diff --git a/paddle/phi/kernels/funcs/top_k_function_cuda.h b/paddle/phi/kernels/funcs/top_k_function_cuda.h
-index e30d440ff3..3c74792690 100644
+index e30d440ff3..108edda7ca 100644
 --- a/paddle/phi/kernels/funcs/top_k_function_cuda.h
 +++ b/paddle/phi/kernels/funcs/top_k_function_cuda.h
 @@ -30,11 +30,11 @@ limitations under the License. */
  #include "paddle/phi/kernels/funcs/eigen/eigen_function.h"
  #include "paddle/phi/kernels/primitive/functor_primitives.h"
-
+ 
 -#define FINAL_MASK 0xffffffff
 +#define FINAL_MASK 0xffffffffffffffffull
  #ifdef PADDLE_WITH_HIP
@@ -545,7 +545,7 @@ index e30d440ff3..3c74792690 100644
 +#define WARP_SIZE 64
  #endif
  #define MAX_NUM_THREADS 1024
-
+ 
 @@ -196,21 +196,56 @@ __device__ __forceinline__ void AddTo(Pair<T> topk[],
    for (int k = beam_size - 2; k >= 0; k--) {
      if (largest) {
@@ -606,7 +606,7 @@ index e30d440ff3..3c74792690 100644
 +  topk[0 + offset].v = p.v;
 +  topk[0 + offset].id = p.id;
  }
-
+ 
  template <typename T, int BlockSize>
 @@ -239,24 +274,24 @@ __device__ __forceinline__ void GetTopK(Pair<T> topk[],
  template <typename T, int BlockSize>
@@ -662,7 +662,7 @@ index e30d440ff3..3c74792690 100644
 +            // topk + MaxLength - *beam, src, tid, dim, *max, length, largest);
        }
      }
-
+ 
 @@ -355,6 +394,8 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
        shared_max[wid] = input_now;
      }
@@ -697,7 +697,7 @@ index e30d440ff3..3c74792690 100644
 -    if (--(*k) == 0) break;
 +    // if (--(*k) == 0) break;
 +    unsigned long long mask = 0ull;
-
+ 
 -    unsigned mask = 0u;
 +    // unsigned mask = 0u;
      CREATE_SHFL_MASK(mask, true);
@@ -721,7 +721,7 @@ index e30d440ff3..3c74792690 100644
 +
      return ret;
    }
-
+ 
    static __device__ __forceinline__ unsigned int SetBitfield(
        unsigned int val, unsigned int to_insert, int pos, int len) {
      unsigned int ret;
@@ -743,7 +743,7 @@ index e30d440ff3..3c74792690 100644
 +    ret = (static_cast<uint64_t>(val) << (64 - pos - len)) >> (64 - len);
      return ret;
    }
-
+ 
 @@ -507,9 +556,9 @@ struct Bitfield<uint64_t> {
                                                           int pos,
                                                           int len) {
@@ -771,7 +771,7 @@ index e30d440ff3..3c74792690 100644
 +  return ::__lane_id();
 +  // return lane_id;
  }
-
+ 
  __device__ __forceinline__ unsigned GetLaneMaskLe() {
    unsigned mask;
 -  asm("mov.u32 %0, %%lanemask_le;" : "=r"(mask));
@@ -780,17 +780,17 @@ index e30d440ff3..3c74792690 100644
 +  return ((uint64_t(1) << ::__lane_id()) << 1) - 1;
 +  // return mask;
  }
-
+ 
  template <typename T, bool KillDependency, class Function>
 @@ -881,7 +936,8 @@ __global__ void GatherKthValue(const T* input,
-
+ 
    // 1. Find the k-th value
    T kth_value = static_cast<T>(0);
 -  RadixSearch<T, RadixTypeConfig<T>::RadixType, IndexType, false>(
 +  // RadixSearch<T, RadixTypeConfig<T>::RadixType, IndexType, false>(
 +  RadixSearch<T, typename RadixTypeConfig<T>::RadixType, IndexType, false>(
        cur_input, k, num_cols, shared_mem, &kth_value);
-
+ 
    __shared__ int64_t block_min_idx;
 @@ -1314,3 +1370,4 @@ bool SortTopk(const phi::GPUContext& dev_ctx,
  }
@@ -803,12 +803,12 @@ index 32db61532f..0220316bc3 100644
 +++ b/paddle/phi/kernels/fusion/gpu/fused_dropout_helper.h
 @@ -15,7 +15,7 @@
  #pragma once
-
+ 
  #if defined(PADDLE_WITH_CUDA)
 -#include "paddle/phi/backends/dynload/cublasLt.h"
 +// #include "paddle/phi/backends/dynload/cublasLt.h"
  #endif
-
+ 
  #include "glog/logging.h"
 diff --git a/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h b/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
 index 9d4bb18d55..ea42cc10a9 100644
@@ -830,12 +830,12 @@ index b8cfdbf3ce..fa14b94a77 100644
 --- a/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
 +++ b/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
 @@ -14,7 +14,7 @@
-
+ 
  #include "paddle/phi/core/kernel_registry.h"
  #include "paddle/phi/kernels/funcs/aligned_vector.h"
 -#include "paddle/phi/kernels/fusion/gpu/mmha_util.cu.h"
 +#include "kernels/metax_kernel/mmha_util.cu.h"
-
+ 
  namespace phi {
  namespace fusion {
 diff --git a/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu b/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
@@ -843,14 +843,27 @@ index e838778952..83e805e75a 100644
 --- a/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
 +++ b/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
 @@ -14,7 +14,7 @@
-
+ 
  #include "paddle/phi/core/kernel_registry.h"
  #include "paddle/phi/kernels/funcs/aligned_vector.h"
 -#include "paddle/phi/kernels/fusion/gpu/mmha_util.cu.h"
 +#include "kernels/metax_kernel/mmha_util.cu.h"
-
+ 
  namespace phi {
  namespace fusion {
+diff --git a/paddle/phi/kernels/gpu/correlation_kernel.cu b/paddle/phi/kernels/gpu/correlation_kernel.cu
+index 4c93778bde..c7bdf8a2cc 100644
+--- a/paddle/phi/kernels/gpu/correlation_kernel.cu
++++ b/paddle/phi/kernels/gpu/correlation_kernel.cu
+@@ -103,7 +103,7 @@ void CorrelationCUDAKernel(const Context &dev_ctx,
+                            int stride2,
+                            int corr_type_multiply,
+                            DenseTensor *out) {
+-  bool is_gpu_place = dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU;
++  bool is_gpu_place = dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU || dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM;
+   PADDLE_ENFORCE_EQ(
+       is_gpu_place,
+       true,
 diff --git a/paddle/phi/kernels/gpu/depthwise_conv.h b/paddle/phi/kernels/gpu/depthwise_conv.h
 index f0cca0f701..02ea957240 100644
 --- a/paddle/phi/kernels/gpu/depthwise_conv.h
@@ -863,9 +876,22 @@ index f0cca0f701..02ea957240 100644
 -#include "paddle/phi/kernels/impl/conv_cudnn_impl.h"
 +#include "kernels/gpudnn/conv_gpudnn.h"
 +#include "kernels/impl/conv_cudnn_impl.h"
-
+ 
  namespace phi {
  // To determine use cudnn or not.
+diff --git a/paddle/phi/kernels/gpu/dgc_kernel.cu b/paddle/phi/kernels/gpu/dgc_kernel.cu
+index c2ddfa1347..c6adf5a6de 100644
+--- a/paddle/phi/kernels/gpu/dgc_kernel.cu
++++ b/paddle/phi/kernels/gpu/dgc_kernel.cu
+@@ -188,7 +188,7 @@ void DGCKernel(const Context& dev_ctx,
+   int buf_size = paddle::communication::dgc::get_buffer_size(k);
+   phi::Allocator::AllocationPtr tmp_ious_data;
+ #if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
+-  if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU) {
++  if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU || dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM) {
+     tmp_ious_data = phi::memory_utils::Alloc(
+         dev_ctx.GetPlace(),
+         buf_size,
 diff --git a/paddle/phi/kernels/gpu/gelu_funcs.h b/paddle/phi/kernels/gpu/gelu_funcs.h
 index 29fa252e96..4ae72b0935 100644
 --- a/paddle/phi/kernels/gpu/gelu_funcs.h
@@ -890,7 +916,7 @@ index 29fa252e96..4ae72b0935 100644
 +// #endif
    return tanhf(x);
  }
-
+ 
 diff --git a/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu b/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
 index 11efd87965..679db14c24 100644
 --- a/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
@@ -901,9 +927,9 @@ index 11efd87965..679db14c24 100644
  #include "paddle/phi/kernels/funcs/math_function.h"
 -#include "paddle/phi/kernels/gpudnn/softmax_gpudnn.h"
 +#include "kernels/gpudnn/softmax_gpudnn.h"
-
+ 
  namespace phi {
-
+ 
 diff --git a/paddle/phi/kernels/gpu/log_softmax_kernel.cu b/paddle/phi/kernels/gpu/log_softmax_kernel.cu
 index 63c35dd4ee..15da9aea45 100644
 --- a/paddle/phi/kernels/gpu/log_softmax_kernel.cu
@@ -914,9 +940,9 @@ index 63c35dd4ee..15da9aea45 100644
  #include "paddle/phi/kernels/funcs/math_function.h"
 -#include "paddle/phi/kernels/gpudnn/softmax_gpudnn.h"
 +#include "kernels/gpudnn/softmax_gpudnn.h"
-
+ 
  namespace phi {
-
+ 
 diff --git a/paddle/phi/kernels/gpu/lstsq_kernel.cu b/paddle/phi/kernels/gpu/lstsq_kernel.cu
 index 1bdbe1564c..f753b54bc6 100644
 --- a/paddle/phi/kernels/gpu/lstsq_kernel.cu
@@ -930,6 +956,19 @@ index 1bdbe1564c..f753b54bc6 100644
  #include "paddle/phi/kernels/impl/qr_kernel_impl.h"
  #include "paddle/phi/kernels/impl/tril_triu_kernel_impl.h"
  #include "paddle/phi/kernels/lstsq_kernel.h"
+diff --git a/paddle/phi/kernels/gpu/shuffle_batch_kernel.cu b/paddle/phi/kernels/gpu/shuffle_batch_kernel.cu
+index 05a977828f..5136608c41 100644
+--- a/paddle/phi/kernels/gpu/shuffle_batch_kernel.cu
++++ b/paddle/phi/kernels/gpu/shuffle_batch_kernel.cu
+@@ -58,7 +58,7 @@ void ShuffleBatchKernel(const Context& dev_ctx,
+   int64_t seed_int = 0;
+   if (seed.initialized()) {
+     const auto& seed_place = seed.place().GetType();
+-    bool is_gpu_place = seed_place == phi::AllocationType::GPU;
++    bool is_gpu_place = seed_place == phi::AllocationType::GPU || seed_place == phi::AllocationType::CUSTOM;
+     if (is_gpu_place) {
+       // NOTE: We have overwritten GetKernelTypeForVar, so seed_place would
+       // not be CUDAPlace in practice. This case would only happen in Python
 diff --git a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h b/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
 index 9bc5326c90..79b57a8203 100644
 --- a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
@@ -948,7 +987,7 @@ index cf80666b4e..ca76e055fb 100644
 --- a/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/baddbmm_grad_kernel_impl.h
 @@ -19,7 +19,7 @@ limitations under the License. */
-
+ 
  #include "paddle/phi/common/amp_type_traits.h"
  #include "paddle/phi/kernels/baddbmm_grad_kernel.h"
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
@@ -961,14 +1000,14 @@ index 2789cb59a2..b91b076f7f 100644
 --- a/paddle/phi/kernels/impl/baddbmm_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/baddbmm_kernel_impl.h
 @@ -20,7 +20,7 @@ limitations under the License. */
-
+ 
  #include "paddle/phi/common/amp_type_traits.h"
  #include "paddle/phi/kernels/baddbmm_kernel.h"
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/eigen/common.h"
  #include "paddle/phi/kernels/funcs/eigen/eigen_function.h"
-
+ 
 diff --git a/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h b/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h
 index 9a21c23666..86413d1577 100644
 --- a/paddle/phi/kernels/impl/conv_transpose_grad_kernel_impl.h
@@ -993,7 +1032,7 @@ index 4459a931da..837c8682b8 100644
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/deformable_conv_functor.h"
-
+ 
  namespace phi {
 diff --git a/paddle/phi/kernels/impl/deformable_conv_kernel_impl.h b/paddle/phi/kernels/impl/deformable_conv_kernel_impl.h
 index ad9e9197dd..5478d9817d 100644
@@ -1013,31 +1052,31 @@ index e6b3960f6d..564125f1f6 100644
 --- a/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
 @@ -56,8 +56,8 @@ HOSTDEVICE T igam(const T a, const T x) {
-
+ 
  template <typename T>
  HOSTDEVICE T igamc(const T a, const T x) {
 -  static T big = 4.503599627370496e15;
 -  static T biginv = 2.22044604925031308085e-16;
 +  const static T big = 4.503599627370496e15;
 +  const static T biginv = 2.22044604925031308085e-16;
-
+ 
    if ((x <= T{0}) || (a <= T{0})) return (T{1.0});
-
+ 
 diff --git a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h b/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
 index 410fb3c560..009ce03440 100644
 --- a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
 @@ -54,7 +54,7 @@ HOSTDEVICE T digamma_positive_domain(T x) {
-
+ 
  template <typename T>
  HOSTDEVICE T digamma(T x) {
 -  static T pi = T{3.14159265358979323846};
 +  const static T pi = T{3.14159265358979323846};
-
+ 
    if (x == T{0.0}) {
      T inf = std::numeric_limits<T>::infinity();
 diff --git a/paddle/phi/kernels/impl/llm_int8_matmul_kernel_impl.h b/paddle/phi/kernels/impl/llm_int8_matmul_kernel_impl.h
-index 5ebbc8d2db..48acf8d0cd 100644
+index 5ebbc8d2db..c7b6c338e2 100644
 --- a/paddle/phi/kernels/impl/llm_int8_matmul_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/llm_int8_matmul_kernel_impl.h
 @@ -15,8 +15,9 @@ limitations under the License. */
@@ -1049,11 +1088,11 @@ index 5ebbc8d2db..48acf8d0cd 100644
 +#include "kernels/funcs/blas/cublaslt.h"
 +#include "kernels/funcs/quant_dequant.h"
 +#include "kernels/metax_kernel/metax_context.h"
-
+ 
  #pragma once
-
+ 
 @@ -668,7 +669,7 @@ void LLMGemm(const phi::GPUContext& dev_ctx,
-
+ 
    {
      auto helper =
 -        std::make_unique<CublasLtHelper>(m, k, n, dev_ctx.cublaslt_handle());
@@ -1067,12 +1106,12 @@ index 1f319c4ae3..9186eb6906 100644
 +++ b/paddle/phi/kernels/impl/matrix_power_grad_kernel_impl.h
 @@ -15,7 +15,7 @@ limitations under the License. */
  #pragma once
-
+ 
  #include "paddle/phi/core/dense_tensor.h"
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/matrix_inverse.h"
-
+ 
  namespace phi {
 diff --git a/paddle/phi/kernels/impl/matrix_power_kernel_impl.h b/paddle/phi/kernels/impl/matrix_power_kernel_impl.h
 index 6f03f76eeb..5fe2c3e7dc 100644
@@ -1080,13 +1119,13 @@ index 6f03f76eeb..5fe2c3e7dc 100644
 +++ b/paddle/phi/kernels/impl/matrix_power_kernel_impl.h
 @@ -15,7 +15,7 @@ limitations under the License. */
  #pragma once
-
+ 
  #include "paddle/phi/core/dense_tensor.h"
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/for_range.h"
  #include "paddle/phi/kernels/funcs/matrix_inverse.h"
-
+ 
 diff --git a/paddle/phi/kernels/impl/merged_momentum_impl.h b/paddle/phi/kernels/impl/merged_momentum_impl.h
 index 7b85903776..3f4b298807 100644
 --- a/paddle/phi/kernels/impl/merged_momentum_impl.h
@@ -1118,31 +1157,11 @@ index 4099d8b506..baef2cd643 100644
 --- a/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
 @@ -14,7 +14,7 @@
-
+ 
  #pragma once
-
+ 
 -#include "paddle/phi/kernels/funcs/blas/blas.h"
 +#include "kernels/funcs/blas/blas.h"
  #include "paddle/phi/kernels/funcs/eigen/common.h"
  #include "paddle/phi/kernels/funcs/math_function.h"
-
-diff --git a/third_party/flagcx b/third_party/flagcx
-index 7c469f4af9..7e6c4cc3ca 160000
---- a/third_party/flagcx
-+++ b/third_party/flagcx
-@@ -1 +1 @@
--Subproject commit 7c469f4af991bf0f64b8f76d66f8e307a5eaea3f
-+Subproject commit 7e6c4cc3cad3fce9b3dedfe46a9d195d616e8ffa
-diff --git a/third_party/flashattn b/third_party/flashattn
-index 581e48aa69..749aca3807 160000
---- a/third_party/flashattn
-+++ b/third_party/flashattn
-@@ -1 +1 @@
--Subproject commit 581e48aa693a17ec3676ec2715d46130310d318d
-+Subproject commit 749aca380794b472096d4e7ea01dd252ab0887c9
-diff --git a/third_party/yaml-cpp b/third_party/yaml-cpp
---- a/third_party/yaml-cpp
-+++ b/third_party/yaml-cpp
-@@ -1 +1 @@
--Subproject commit 1d8ca1f35eb3a9c9142462b28282a848e5d29a91
-+Subproject commit 1d8ca1f35eb3a9c9142462b28282a848e5d29a91-dirty
+ 
