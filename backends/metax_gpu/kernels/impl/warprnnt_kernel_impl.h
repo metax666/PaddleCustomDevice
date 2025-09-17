@@ -16,12 +16,12 @@
 
 #include <vector>
 
-#include "third_party/warprnnt/include/rnnt.h"
 #include "paddle/phi/core/dense_tensor.h"
 #include "paddle/phi/core/tensor_utils.h"
 #include "paddle/phi/kernels/empty_kernel.h"
 #include "paddle/phi/kernels/full_kernel.h"
 #include "paddle/phi/kernels/funcs/math_function.h"
+#include "third_party/warprnnt/include/rnnt.h"
 
 namespace phi {
 
@@ -56,15 +56,15 @@ class ComputeRnntLossFunctor<Context, float> {
                           void* workspace,
                           rnntOptions options) {
     return compute_rnnt_loss(activations,
-                                           gradients,
-                                           label,
-                                           label_lengths,
-                                           input_lengths,
-                                           static_cast<int>(alphabet_size),
-                                           static_cast<int>(minibatch),
-                                           costs,
-                                           workspace,
-                                           options);
+                             gradients,
+                             label,
+                             label_lengths,
+                             input_lengths,
+                             static_cast<int>(alphabet_size),
+                             static_cast<int>(minibatch),
+                             costs,
+                             workspace,
+                             options);
   }
 };
 
@@ -82,15 +82,15 @@ class ComputeRnntLossFunctor<Context, double> {
                           void* workspace,
                           rnntOptions options) {
     return compute_rnnt_loss_fp64(activations,
-                                                gradients,
-                                                label,
-                                                label_lengths,
-                                                input_lengths,
-                                                static_cast<int>(alphabet_size),
-                                                static_cast<int>(minibatch),
-                                                costs,
-                                                workspace,
-                                                options);
+                                  gradients,
+                                  label,
+                                  label_lengths,
+                                  input_lengths,
+                                  static_cast<int>(alphabet_size),
+                                  static_cast<int>(minibatch),
+                                  costs,
+                                  workspace,
+                                  options);
   }
 };
 
@@ -117,6 +117,7 @@ class WarpRNNTFunctor {
    * \param blank             blank label used in rnnt loss function.
    * \param cpu_loss         loss of each example in CPU memory.
    */
+
   void operator()(const Context& dev_ctx,
                   const T* input,
                   T* gradient,

@@ -81,7 +81,8 @@ void ConvCudnnKernelImplV7(const DenseTensor* transformed_input,
   args.cdesc.set(
       dtype, padding_common, strides, dilations, phi::AllowTF32Cudnn(), groups);
 #else
-  args.cdesc.set(dtype, padding_common, strides, dilations, phi::AllowTF32Cudnn());
+  args.cdesc.set(
+      dtype, padding_common, strides, dilations, phi::AllowTF32Cudnn());
 #endif
 
 #if defined(PADDLE_WITH_CUDA) && CUDNN_VERSION_MIN(7, 0, 1)
