@@ -22,8 +22,8 @@ pip  uninstall paddlepaddle -y
 
 # init paddle
 git submodule sync --recursive && git submodule update --init --recursive
-sleep 1000000
-unset http_proxy https_proxy
+# sleep 1000000
+# unset http_proxy https_proxy
 
 
 # export http_proxy=https://172.17.0.1:1080 https_proxy=http://10.2.192.21:1080
