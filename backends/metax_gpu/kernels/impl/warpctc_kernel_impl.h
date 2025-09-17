@@ -16,7 +16,6 @@
 
 #include <vector>
 
-#include "third_party/warpctc/include/ctc.h"
 #include "paddle/phi/core/dense_tensor.h"
 #include "paddle/phi/core/lod_utils.h"
 #include "paddle/phi/core/tensor_utils.h"
@@ -25,6 +24,7 @@
 #include "paddle/phi/kernels/funcs/sequence_padding.h"
 #include "paddle/phi/kernels/funcs/sequence_scale.h"
 #include "paddle/utils/optional.h"
+#include "third_party/warpctc/include/ctc.h"
 
 namespace phi {
 
@@ -59,15 +59,15 @@ class ComputeCtcLossFunctor<Context, float> {
                          void* workspace,
                          ctcOptions options) {
     return compute_ctc_loss(activations,
-                                          gradients,
-                                          flat_labels,
-                                          label_lengths,
-                                          input_lengths,
-                                          static_cast<int>(alphabet_size),
-                                          static_cast<int>(minibatch),
-                                          costs,
-                                          workspace,
-                                          options);
+                            gradients,
+                            flat_labels,
+                            label_lengths,
+                            input_lengths,
+                            static_cast<int>(alphabet_size),
+                            static_cast<int>(minibatch),
+                            costs,
+                            workspace,
+                            options);
   }
 };
 
@@ -84,17 +84,16 @@ class ComputeCtcLossFunctor<Context, double> {
                          double* costs,
                          void* workspace,
                          ctcOptions options) {
-    return compute_ctc_loss_double(
-        activations,
-        gradients,
-        flat_labels,
-        label_lengths,
-        input_lengths,
-        static_cast<int>(alphabet_size),
-        static_cast<int>(minibatch),
-        costs,
-        workspace,
-        options);
+    return compute_ctc_loss_double(activations,
+                                   gradients,
+                                   flat_labels,
+                                   label_lengths,
+                                   input_lengths,
+                                   static_cast<int>(alphabet_size),
+                                   static_cast<int>(minibatch),
+                                   costs,
+                                   workspace,
+                                   options);
   }
 };
 
@@ -140,21 +139,19 @@ class WarpCTCFunctor {
     size_t workspace_bytes = 0;
     ctcStatus_t status = CTC_STATUS_UNKNOWN_ERROR;
     if (sizeof(T) == 4) {
-      status =
-          get_workspace_size(cpu_label_lengths,
-                                           cpu_input_lengths,
-                                           static_cast<int>(sequence_width),
-                                           static_cast<int>(num_sequences),
-                                           options_,
-                                           &workspace_bytes);
+      status = get_workspace_size(cpu_label_lengths,
+                                  cpu_input_lengths,
+                                  static_cast<int>(sequence_width),
+                                  static_cast<int>(num_sequences),
+                                  options_,
+                                  &workspace_bytes);
     } else {
-      status = get_workspace_size_double(
-          cpu_label_lengths,
-          cpu_input_lengths,
-          static_cast<int>(sequence_width),
-          static_cast<int>(num_sequences),
-          options_,
-          &workspace_bytes);
+      status = get_workspace_size_double(cpu_label_lengths,
+                                         cpu_input_lengths,
+                                         static_cast<int>(sequence_width),
+                                         static_cast<int>(num_sequences),
+                                         options_,
+                                         &workspace_bytes);
     }
     PADDLE_ENFORCE_EQ(
         CTC_STATUS_SUCCESS,
