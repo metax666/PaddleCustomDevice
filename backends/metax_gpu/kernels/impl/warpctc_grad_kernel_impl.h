@@ -16,7 +16,6 @@
 
 #include <vector>
 
-#include "third_party/warpctc/include/ctc.h"
 #include "paddle/phi/core/dense_tensor.h"
 #include "paddle/phi/kernels/empty_kernel.h"
 #include "paddle/phi/kernels/funcs/eigen/common.h"
@@ -24,6 +23,7 @@
 #include "paddle/phi/kernels/funcs/sequence_padding.h"
 #include "paddle/phi/kernels/funcs/sequence_scale.h"
 #include "paddle/utils/optional.h"
+#include "third_party/warpctc/include/ctc.h"
 
 namespace phi {
 

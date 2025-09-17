@@ -19,26 +19,28 @@ defaults:
 jobs:
   metax-gpu-test:
     runs-on: paddle-metax-runner-set
+    # runs-on: debug-paddle-runner-set
     steps:
       - name: Checkout repository
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
 
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            BRANCH_NAME=${{ github.head_ref }}
-          else
-            BRANCH_NAME=${{ github.ref_name }}
-          fi
-
           git clone \
             --reference-if-able /home/runner/PaddleCustomDevice \
             --depth=1 \
             --shallow-submodules \
             --jobs=8 \
-            --branch $BRANCH_NAME \
+            --branch ${{ github.base_ref || github.ref_name}} \
             --recurse-submodules \
             https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
+
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            git fetch origin pull/${{ github.event.pull_request.number }}/head:pull/${{ github.event.pull_request.number }}/head
+            git checkout pull/${{ github.event.pull_request.number }}/head
+
+            # git submodule update --init --recursive
+          fi
 
 
       - name: compile

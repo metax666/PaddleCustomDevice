@@ -13,8 +13,8 @@
 // limitations under the License.
 
 #include "paddle/phi/core/kernel_registry.h"
+#include "paddle/phi/kernels/gpu/index_elementwise_put_kernel.cu"  //NOLINT
 #include "paddle/phi/kernels/index_elementwise_put_kernel.h"
-
 PD_CUSTOM_KERNEL_REGISTER(index_elementwise_put,
                           metax_gpu,
                           ALL_LAYOUT,
@@ -31,3 +31,19 @@ PD_CUSTOM_KERNEL_REGISTER(index_elementwise_put,
                           phi::dtype::bfloat16,
                           phi::dtype::complex<float>,
                           phi::dtype::complex<double>) {}
+PD_CUSTOM_KERNEL_REGISTER(index_elementwise_put_with_tensor,
+                          metax_gpu,
+                          ALL_LAYOUT,
+                          phi::IndexElementwisePutWithTensorKernel,
+                          bool,
+                          float,
+                          double,
+                          int,
+                          int8_t,
+                          int64_t,
+                          int16_t,
+                          uint8_t,
+                          phi::float16,
+                          phi::bfloat16,
+                          phi::complex64,
+                          phi::complex128) {}

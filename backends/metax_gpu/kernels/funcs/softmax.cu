@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License. */
 #include <vector>
 
-#include "kernels/metax_context.h"
+#include "kernels/metax_kernel/metax_context.h"
 #include "paddle/phi/backends/gpu/gpu_context.h"
 #include "paddle/phi/backends/gpu/gpu_dnn.h"
 #include "paddle/phi/kernels/funcs/math_function.h"

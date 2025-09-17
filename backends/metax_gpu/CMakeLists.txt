@@ -666,7 +666,6 @@ file(
   # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/selected_rows/shape_kernel.cc
   # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/sparse/gpu/conv_kernel_igemm.cu
   # ############################################################################
-  # kernels/fusion kernels/selected_rows
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/selected_rows/gpu/adamw_kernel.cu
   # kernels/kps
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/kps/elementwise_kernel.cu
@@ -713,10 +712,7 @@ file(
   kernels/cuda_kernels/*.cc
   kernels/cuda_kernels/*.cu
   kernels/funcs/blas/*.cc
-  kernels/ernie_core/*.cu
-  kernels/ernie_core/rms_norm_kernel_register.cu
-  kernels/ernie_core/top_p_sampling_kernel_register.cu
-  kernels/ernie_core/fused_bias_act_kernel_register.cu)
+  kernels/ernie_core/*.cu)
 
 set(CUSTOM_DEVICE_SRCS ${CUDA_SRCS} ${CC_SRCS} ${ERNIE_CORE_SRCS})
 
@@ -735,8 +731,13 @@ add_library(
 
 target_include_directories(
   ${TARGET_NAME}
-  PRIVATE ${PADDLE_SOURCE_DIR} ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/kernels
-          ${CUDA_INCLUDE_DIRS} ${WARPCTC_INCLUDE_DIR} ${WARPRNNT_INCLUDE_DIR} ${PADDLE_SOURCE_DIR}/third_party/pybind/include
+  PRIVATE ${PADDLE_SOURCE_DIR}
+          ${CMAKE_SOURCE_DIR}
+          ${CMAKE_SOURCE_DIR}/kernels
+          ${CUDA_INCLUDE_DIRS}
+          ${WARPCTC_INCLUDE_DIR}
+          ${WARPRNNT_INCLUDE_DIR}
+          ${PADDLE_SOURCE_DIR}/third_party/pybind/include
           ${PADDLE_SOURCE_DIR}/paddle/phi/api/include/compat)
 
 target_link_libraries(
