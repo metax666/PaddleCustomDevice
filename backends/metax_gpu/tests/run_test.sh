@@ -25,6 +25,7 @@ export PYTHONPATH="${LEGACY_TEST_PATH}:${PYTHONPATH}:${TEST_PATH1}:${TEST_PATH2}
 export
 # sleep 1000000
 
+
 rm -r build
 mkdir -p build && cd build
 
