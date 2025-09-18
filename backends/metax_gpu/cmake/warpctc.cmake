@@ -35,6 +35,13 @@ else()
       git checkout -- . && git checkout ${WARPCTC_TAG} && patch -Nd
       ${SOURCE_DIR} <
       ${PADDLE_SOURCE_DIR}/patches/warpctc/CMakeLists.txt.cuda.patch)
+  file(COPY ${CMAKE_SOURCE_DIR}/patch/intrinsics.cuh
+       DESTINATION ${SOURCE_DIR}/include/contrib/moderngpu/include/device/)
+  message(STATUS "atch file path: ${CMAKE_SOURCE_DIR}/patch/intrinsics.cuh")
+  message(
+    STATUS
+      "ModernGPU device path: ${SOURCE_DIR}/include/contrib/moderngpu/include/device/"
+  )
 endif()
 
 if(NOT WIN32 AND WITH_GPU)
