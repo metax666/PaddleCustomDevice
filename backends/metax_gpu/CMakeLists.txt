@@ -70,7 +70,6 @@ include(eigen)
 include(xxhash)
 include(zlib)
 include(protobuf)
-include(generate_pb)
 
 set(PROTO_FILE "${PADDLE_SOURCE_DIR}/paddle/phi/core/external_error.proto")
 get_filename_component(PROTO_WE "${PROTO_FILE}" NAME_WE)
@@ -614,12 +613,9 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/funcs/math_function.cc
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/log_softmax_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/log_softmax_grad_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/backends/context_pool.cc
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/funcs/repeat_tensor2index_tensor.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/binomial_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/bernoulli_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/bmm_grad_kernel_impl.h
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/bmm_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/backends/dynload/cufft.cc
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/box_coder_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/broadcast_tensors_kernel.cu
@@ -642,29 +638,11 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/gather_tree_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/graph_reindex_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/graph_sample_neighbors_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/group_norm_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/group_norm_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/gumbel_softmax_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/gumbel_softmax_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/gpu/fused_act_dequant_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/gpu/block_multi_head_attention_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/gpu/fused_weighted_swiglu_act_quant_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/gpu/fused_elemwise_activation_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/gpu/fused_softmax_mask_upper_triangle_grad_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/fp8_gemm/fp8_gemm_with_cublasLt/fp8_fp8_half_gemm.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/cutlass/memory_efficient_attention_grad_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/cutlass/fused_conv2d_add_act_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/cutlass/variable_length_memory_efficient_attention_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/cutlass/memory_efficient_attention_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/cutlass/gemm_epilogue_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/gpu/blha_get_max_len.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/gpu/fused_elemwise_activation_grad_kernel.cu
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/stride/as_real_kernel.cc
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/stride/as_complex_kernel.cc
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/stride/complex_grad_kernel.cc
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/stride/complex_kernel.cc
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/selected_rows/shape_kernel.cc
-  # ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/sparse/gpu/conv_kernel_igemm.cu
+  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/top_p_sampling_kernel.cu
+  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/rms_norm_kernel.cu
   # ############################################################################
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/selected_rows/gpu/adamw_kernel.cu
   # kernels/kps
@@ -697,7 +675,6 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/legacy/gpu/cal_aux_loss_grad_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/legacy/gpu/expand_modality_expert_id_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/legacy/gpu/int_bincount_kernel.cu
-  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/top_p_sampling_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/fusion/gpu/fused_bias_act_kernel.cu)
 
 file(
@@ -707,6 +684,8 @@ file(
   passes/*.cc
   kernels/*.cc
   kernels/*.cu
+  kernels/fusion/*.cc
+  kernels/fusion/*.cu
   kernels/gpudnn/*.cc
   kernels/gpudnn/*.cu
   kernels/cuda_kernels/*.cc
@@ -721,13 +700,7 @@ set_source_files_properties(${CUSTOM_DEVICE_SRCS} PROPERTIES LANGUAGE CUDA)
 set(CMAKE_CUCC_COMPILER "cucc")
 set(CMAKE_CUCC_FLAGS "-I /opt/maca/tools/cu-bridge/include/")
 
-set_source_files_properties(
-  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/rms_norm_kernel.cu
-  PROPERTIES LANGUAGE CUDA)
-add_library(
-  ${TARGET_NAME} SHARED
-  ${CUSTOM_DEVICE_SRCS}
-  ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/rms_norm_kernel.cu)
+add_library(${TARGET_NAME} SHARED ${CUSTOM_DEVICE_SRCS})
 
 target_include_directories(
   ${TARGET_NAME}
@@ -753,9 +726,6 @@ target_link_libraries(
   ${WARPCTC_LIBRARIES}
   ${WARPRNNT_LIBRARIES}
   ${PADDLE_CORE_LIB})
-target_link_libraries(${TARGET_NAME} /opt/maca/lib/libmccl.so)
-target_link_libraries(${TARGET_NAME} /opt/maca/lib/libmcFlashAttn.so)
-target_link_libraries(${TARGET_NAME} /opt/maca/lib/libmcpti.so)
 include_directories(BEFORE ${PADDLE_SOURCE_DIR})
 
 target_compile_definitions(
