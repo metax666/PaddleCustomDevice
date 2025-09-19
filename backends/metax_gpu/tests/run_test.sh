@@ -22,6 +22,9 @@ TEST_PATH1="${SCRIPT_DIR}/../../../python"
 TEST_PATH2="${SCRIPT_DIR}/../../../python/tests"
 export PYTHONPATH="${LEGACY_TEST_PATH}:${PYTHONPATH}:${TEST_PATH1}:${TEST_PATH2}"
 
+export
+# sleep 1000000
+
 
 rm -r build
 mkdir -p build && cd build
@@ -32,4 +35,4 @@ cmake ..
 cmake --build .
 
 
-ctest -j1 --output-on-failure
+ctest -j10 --output-on-failure

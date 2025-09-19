@@ -81,8 +81,7 @@ list(
   ${PADDLE_LEGACY_TEST_PATH}/test_softmax_with_cross_entropy_op.py
   ${PADDLE_LEGACY_TEST_PATH}/test_full_op.py
   ${PADDLE_LEGACY_TEST_PATH}/test_scatter_op.py
-  ${PADDLE_LEGACY_TEST_PATH}/test_clip_op.py
-  ${PADDLE_LEGACY_TEST_PATH}/test_reduce_op.py)
+  ${PADDLE_LEGACY_TEST_PATH}/test_clip_op.py)
 
 list(
   REMOVE_ITEM
@@ -96,7 +95,7 @@ list(
   ${PADDLE_LEGACY_TEST_PATH}/test_softmax_op.py
   ${PADDLE_LEGACY_TEST_PATH}/test_elementwise_add_op.py
   ${PADDLE_LEGACY_TEST_PATH}/test_gather_op.py
-  # op_test.py 里 self._get_places()接口适配问题
+  # op_test.py 里 self._get_places()接口的适配问题
   ${PADDLE_LEGACY_TEST_PATH}/test_elementwise_pow_op.py
   ${PADDLE_LEGACY_TEST_PATH}/test_layer_norm_op.py
   # device == "gpu" 适配问题
