@@ -31,14 +31,15 @@ jobs:
             --depth=1 \
             --shallow-submodules \
             --jobs=8 \
-            --branch ${{ github.base_ref }} \
+            --branch ${{ github.base_ref || github.ref_name}} \
             --recurse-submodules \
             https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
 
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             git fetch origin pull/${{ github.event.pull_request.number }}/head:pull/${{ github.event.pull_request.number }}/head
             git checkout pull/${{ github.event.pull_request.number }}/head
-            git submodule update --init --recursive
+
+            # git submodule update --init --recursive
           fi
 
 
