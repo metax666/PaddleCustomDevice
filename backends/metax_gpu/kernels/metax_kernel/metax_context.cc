@@ -15,25 +15,6 @@
 #include "kernels/metax_kernel/metax_context.h"
 
 namespace phi {
-const bool allow_tf32_cublas = []() -> bool {
-  const char* v = std::getenv("ALLOW_TF32_CUBLAS");
-  if (v) {
-    return std::atoi(v);
-  }
-  return false;
-}();
-
-const bool allow_tf32_cudnn = []() -> bool {
-  const char* v = std::getenv("ALLOW_TF32_CUDNN");
-  if (v) {
-    return std::atoi(v);
-  }
-  return false;
-}();
-
-bool AllowTF32Cublas() { return allow_tf32_cublas; }
-bool AllowTF32Cudnn() { return allow_tf32_cudnn; }
-
 void DnnWorkspaceHandle::RunFuncSync(
     const std::function<void(void*)>& cudnn_func,
     size_t required_workspace_bytes,
@@ -86,21 +67,5 @@ static void InitBlasLtHandle(blasLtHandle_t* blaslt_handle) {
 #elif defined(PADDLE_WITH_HIP)
   phi::dynload::hipblasLtCreate(blaslt_handle);
 #endif
-}
-
-blasLtHandle_t GetBlasLtHandle() {
-  std::call_once(flag_blaslt_, [&]() {
-    if (!blaslt_handle_) {
-      if (!blaslt_handle_creator_)
-        InitBlasLtHandle(&blaslt_handle_);
-      else
-        blaslt_handle_ = blaslt_handle_creator_();
-    }
-  });
-  PADDLE_ENFORCE_NOT_NULL(
-      blaslt_handle_,
-      common::errors::InvalidArgument(
-          "The GPU blasLt handle is nullptr. It must not be null."));
-  return blaslt_handle_;
 }
 }  // namespace phi
