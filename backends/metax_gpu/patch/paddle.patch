@@ -488,7 +488,6 @@ index 4eae698648..5c047723ea 100644
  #endif
    return block_dim >= kMaxBlockDim ? kMaxBlockDim : lwarpSize;
  }
-
 diff --git a/paddle/phi/kernels/funcs/math/context_project.h b/paddle/phi/kernels/funcs/math/context_project.h
 index 15e1a4a3c3..e4780538d7 100644
 --- a/paddle/phi/kernels/funcs/math/context_project.h
@@ -1095,10 +1094,10 @@ index 410fb3c560..009ce03440 100644
    if (x == T{0.0}) {
      T inf = std::numeric_limits<T>::infinity();
 diff --git a/paddle/phi/kernels/impl/llm_int8_matmul_kernel_impl.h b/paddle/phi/kernels/impl/llm_int8_matmul_kernel_impl.h
-index 5ebbc8d2db..c7b6c338e2 100644
+index 5ebbc8d2db..162fb3bffb 100644
 --- a/paddle/phi/kernels/impl/llm_int8_matmul_kernel_impl.h
 +++ b/paddle/phi/kernels/impl/llm_int8_matmul_kernel_impl.h
-@@ -15,8 +15,9 @@ limitations under the License. */
+@@ -15,8 +15,8 @@ limitations under the License. */
  #include <iostream>
  #include <vector>
  #include "paddle/phi/common/datatype_traits.h"
@@ -1106,19 +1105,9 @@ index 5ebbc8d2db..c7b6c338e2 100644
 -#include "paddle/phi/kernels/funcs/quant_dequant.h"
 +#include "kernels/funcs/blas/cublaslt.h"
 +#include "kernels/funcs/quant_dequant.h"
-+#include "kernels/metax_kernel/metax_context.h"
  
  #pragma once
  
-@@ -668,7 +669,7 @@ void LLMGemm(const phi::GPUContext& dev_ctx,
- 
-   {
-     auto helper =
--        std::make_unique<CublasLtHelper>(m, k, n, dev_ctx.cublaslt_handle());
-+        std::make_unique<CublasLtHelper>(m, k, n, GetBlasLtHandle());
-     helper->GEMM(quant_input.data<int8_t>(),
-                  weight->data<int8_t>(),
-                  int_out.data<int32_t>(),
 diff --git a/paddle/phi/kernels/impl/matrix_power_grad_kernel_impl.h b/paddle/phi/kernels/impl/matrix_power_grad_kernel_impl.h
 index 1f319c4ae3..9186eb6906 100644
 --- a/paddle/phi/kernels/impl/matrix_power_grad_kernel_impl.h
