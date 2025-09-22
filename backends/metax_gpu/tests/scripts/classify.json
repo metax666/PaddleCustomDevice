@@ -1,0 +1,22 @@
+{
+    "OK":{
+        "skipped":{
+            "rule":["skipped="]
+        }
+    },
+
+    "FAILED":{
+        "precision":{
+            "rule":["Mismatched elements"]
+        },
+        "api":{
+            "rule":["(PermissionDenied) Cannot use CUDAPinnedPlace", "ValueError: The API paddle.device.cuda.get_device_properties", "TypeError: paddle.index_add api"]
+        },
+        "missing":{
+            "rule":["missing metax_gpu kernel", "UnimplementedError: There are no kernels which are registered"]
+        },
+        "file_not_found":{
+            "rule":["FileNotFoundError:"]
+        }
+    }
+}
