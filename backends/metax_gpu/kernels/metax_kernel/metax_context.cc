@@ -56,16 +56,4 @@ void DnnWorkspaceHandle::ReallocWorkspace(size_t required_workspace_bytes) {
   allocation_.reset();
   allocation_ = allocator_->Allocate(required_workspace_bytes);
 }
-
-static std::function<blasLtHandle_t()> blaslt_handle_creator_{nullptr};
-static blasLtHandle_t blaslt_handle_{nullptr};
-static std::once_flag flag_blaslt_;
-
-static void InitBlasLtHandle(blasLtHandle_t* blaslt_handle) {
-#if defined(PADDLE_WITH_CUDA) && CUDA_VERSION >= 11060
-  mcblasLtCreate(blaslt_handle);
-#elif defined(PADDLE_WITH_HIP)
-  phi::dynload::hipblasLtCreate(blaslt_handle);
-#endif
-}
 }  // namespace phi

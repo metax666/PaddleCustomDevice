@@ -27,9 +27,7 @@
 #include "paddle/phi/core/attribute.h"
 #include "paddle/phi/core/device_context.h"
 
-using blasLtHandle_t = struct mcblasLtContext*;
-
-blasLtHandle_t GetBlasLtHandle();
+cublasLtHandle_t GetBlasLtHandle();
 
 namespace phi {
 class DnnWorkspaceHandle {
