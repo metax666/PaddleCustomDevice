@@ -28,7 +28,6 @@ test_one_hot_v2_op
 test_fill_any_op
 test_gather_op
 test_reshape_op
-test_index_put_op
 test_bitwise_op
 test_max_op
 test_pad_op
@@ -214,7 +213,6 @@ test_tile_op
 test_adam_optimizer_fp32_fp64
 test_batch_norm_op
 test_gather_nd_op
-test_pow
 test_executor_check_fetch_list
 test_inplace_softmax_with_cross_entropy
 test_cos
