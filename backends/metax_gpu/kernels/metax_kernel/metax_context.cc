@@ -15,6 +15,24 @@
 #include "kernels/metax_kernel/metax_context.h"
 
 namespace phi {
+const bool allow_tf32_cublas = []() -> bool {
+  const char* v = std::getenv("ALLOW_TF32_CUBLAS");
+  if (v) {
+    return std::atoi(v);
+  }
+  return true;
+}();
+
+const bool allow_tf32_cudnn = []() -> bool {
+  const char* v = std::getenv("ALLOW_TF32_CUDNN");
+  if (v) {
+    return std::atoi(v);
+  }
+  return false;
+}();
+
+bool AllowTF32Cublas() { return allow_tf32_cublas; }
+bool AllowTF32Cudnn() { return allow_tf32_cudnn; }
 void DnnWorkspaceHandle::RunFuncSync(
     const std::function<void(void*)>& cudnn_func,
     size_t required_workspace_bytes,
@@ -55,17 +73,5 @@ void DnnWorkspaceHandle::ReallocWorkspace(size_t required_workspace_bytes) {
   // reset allocation first before re-allocate to save memory
   allocation_.reset();
   allocation_ = allocator_->Allocate(required_workspace_bytes);
-}
-
-static std::function<blasLtHandle_t()> blaslt_handle_creator_{nullptr};
-static blasLtHandle_t blaslt_handle_{nullptr};
-static std::once_flag flag_blaslt_;
-
-static void InitBlasLtHandle(blasLtHandle_t* blaslt_handle) {
-#if defined(PADDLE_WITH_CUDA) && CUDA_VERSION >= 11060
-  mcblasLtCreate(blaslt_handle);
-#elif defined(PADDLE_WITH_HIP)
-  phi::dynload::hipblasLtCreate(blaslt_handle);
-#endif
 }
 }  // namespace phi

@@ -153,7 +153,6 @@ class LogAnalyzer:
 
                 cur_res_type = TestResult.FAILURE
                 cur_sub_type = "other"
-                pre_line = None
                 finish_early = False
 
                 try:
@@ -172,19 +171,19 @@ class LogAnalyzer:
                                 if finish_early:
                                     break
 
-                            pre_line = line
                             if finish_early:
                                 break
 
-                        if "OK" in pre_line:
-                            cur_res_type = TestResult.OK
-                            cur_sub_type = None
-                            for sub_type, sub_type_params in self.__classify_data[
-                                cur_res_type.value
-                            ].items():
-                                for rule in sub_type_params["rule"]:
-                                    if rule in line:
-                                        cur_sub_type = sub_type
+                            if len(line) >= 2 and line[:2] == "OK":
+                                cur_res_type = TestResult.OK
+                                cur_sub_type = None
+                                for sub_type, sub_type_params in self.__classify_data[
+                                    cur_res_type.value
+                                ].items():
+                                    for rule in sub_type_params["rule"]:
+                                        if rule in line:
+                                            cur_sub_type = sub_type
+                                break
 
                         op_name = filename.split(".")
                         if cur_sub_type is None:

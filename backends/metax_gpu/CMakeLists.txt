@@ -733,6 +733,7 @@ target_compile_definitions(
   ${TARGET_NAME}
   PUBLIC PADDLE_WITH_CUDA=1
          PADDLE_WITH_CUSTOM_DEVICE=1
+         mcblasContext=cublasContext
          GPUContext=CustomContext
          KPSContext=CustomContext
          STREAM_TYPE=cudaStream_t
