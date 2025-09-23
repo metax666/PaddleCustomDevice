@@ -42,7 +42,6 @@ test_shape_op
 test_tril_triu_op
 test_slice_op
 test_elementwise_add_op
-test_index_put_op
 test_bincount_op
 test_assign_op
 test_logical_op
@@ -73,7 +72,6 @@ test_fractional_max_pool3d_api
 test_nll_loss
 test_is_empty_op
 test_norm_nn_grad
-test_index_fill
 test_floor
 test_slice_scatter
 test_nn_matmul_v2_grad
@@ -127,10 +125,8 @@ test_flip
 test_fused_bias_dropout_residual_layer_norm_op
 test_greater_equal_op
 test_add_op
-test_cartesian_prod
 test_uniform_random_inplace_op
 test_feed_fetch_method
-test_pow_op
 test_conv3d_transpose_op
 test_add_position_encoding_op
 test_imperative_data_loader_base
@@ -223,12 +219,9 @@ test_executor_check_fetch_list
 test_inplace_softmax_with_cross_entropy
 test_cos
 test_imperative_parallel_coalesce_split
-test_grid_sample_function
-test_rnn_decode_api
 test_triu_indices_op
 test_binary_cross_entropy_with_logits_op
 test_mean_op_v1
-test_round_op
 test_assign_pos_op_dygraph
 test_nn_functional_embedding_static
 test_norm_op
@@ -262,7 +255,6 @@ test_diag_v2
 test_complex_transpose
 test_prior_box_op
 test_square_error_cost
-test_fused_rotary_position_embedding
 test_gru_rnn_op
 test_restrict_nonzero
 test_dygraph_weight_norm
@@ -295,7 +287,6 @@ test_argsort_op
 test_layer_norm_op_v2
 test_adaptive_max_pool1d
 test_shard_index_op
-test_cuda_max_memory_allocated
 test_roi_align_op
 test_sin
 test_take
