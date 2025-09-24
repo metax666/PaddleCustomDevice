@@ -51,4 +51,4 @@ jobs:
       - name: run test
         run: |
           cd backends/metax_gpu/tests
-          bash run_test.sh
+          bash run_test.sh -j 16

@@ -33,7 +33,7 @@ mkdir -p build && cd build
 TEST_LOG_LEVEL=0
 TEST_LIST_FILE=""
 TEST_LOG_OUTPUT_DIR=""
-TEST_PARALLEL_NUM=10
+TEST_PARALLEL_NUM=1
 
 while getopts "i:o:v:j:h" opt; do
   case "$opt" in

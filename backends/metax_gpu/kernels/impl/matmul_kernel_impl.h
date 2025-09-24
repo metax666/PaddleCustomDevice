@@ -40,6 +40,7 @@ limitations under the License. */
 #if defined(PADDLE_WITH_CUDA) && CUDA_VERSION >= 11060 && 0
 #include "paddle/phi/kernels/autotune/auto_tune_base.h"
 #endif
+#include "paddle/phi/kernels/full_kernel.h"
 // clang-format on
 namespace phi {
 
@@ -1485,16 +1486,22 @@ void MatmulKernel(const Context& ctx,
                   bool transpose_x,
                   bool transpose_y,
                   DenseTensor* out) {
-  PADDLE_ENFORCE_NE(
+  if (x.numel() == 0 || y.numel() == 0) {
+    // input shape [1, 1, 5, 0], [1, 1, 0, 5], result shape is [1, 1, 5, 5]
+    phi::Full<T, Context>(
+        ctx, phi::IntArray(common::vectorize(out->dims())), 0, out);
+    return;
+  }
+  PADDLE_ENFORCE_GE(
       common::product(x.dims()),
       0,
-      phi::errors::InvalidArgument("The Input(X) dims size must not be equal 0,"
-                                   " but reviced dims size is 0. "));
-  PADDLE_ENFORCE_NE(
+      common::errors::InvalidArgument(
+          "The dims of Input(X) should be greater than or equal to 0."));
+  PADDLE_ENFORCE_GE(
       common::product(y.dims()),
       0,
-      phi::errors::InvalidArgument("The Input(Y) dims size must not be equal 0,"
-                                   " but reviced dims size is 0. "));
+      common::errors::InvalidArgument(
+          "The dims of Input(Y) should be greater than or equal to 0."));
   const std::vector<std::int64_t> x_dims = common::vectorize(x.dims());
   const std::vector<std::int64_t> y_dims = common::vectorize(y.dims());
   MatmulJudgeDtypeKernel<Context, T>(

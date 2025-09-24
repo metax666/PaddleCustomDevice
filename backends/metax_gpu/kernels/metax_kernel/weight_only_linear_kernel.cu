@@ -35,6 +35,7 @@ void WeightOnlyLinearKernel(const Context& dev_ctx,
                             const int32_t group_size,
                             DenseTensor* out) {
   dev_ctx.template Alloc<T>(out);
+  auto stream = dev_ctx.stream();
   const T* x_data = x.data<T>();
   const int8_t* weight_data = weight.data<int8_t>();
   const T* bias_data = bias ? bias.get().data<T>() : nullptr;
@@ -128,7 +129,7 @@ void WeightOnlyLinearKernel(const Context& dev_ctx,
           k,
           n,
           n};
-      mctlass_op(arguments);
+      mctlass_op(arguments, NULL, stream);
     } else {
       mctlassGemmScaleOp_w8a16_bias mctlass_op;
       typename mctlassGemmScaleOp_w8a16_bias::Arguments arguments{

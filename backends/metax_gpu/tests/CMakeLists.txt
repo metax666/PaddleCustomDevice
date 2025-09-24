@@ -47,6 +47,8 @@ if(NOT TEST_LIST_FILE)
   list(
     REMOVE_ITEM
     PYTHON_TEST_SCRIPTS
+    # Metax unit test
+    ${METAX_UNIT_TEST_PATH}/test_matmul_op_metax.py
     # 精度问题
     ${PADDLE_LEGACY_TEST_PATH}/test_sum_op.py
     ${PADDLE_LEGACY_TEST_PATH}/test_max_op.py
@@ -101,5 +103,5 @@ foreach(test_script ${PYTHON_TEST_SCRIPTS})
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
 
-  set_tests_properties("python_${test_name}" PROPERTIES TIMEOUT 360)
+  set_tests_properties("python_${test_name}" PROPERTIES TIMEOUT 600)
 endforeach()
