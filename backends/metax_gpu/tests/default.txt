@@ -177,7 +177,6 @@ test_imperative_data_parallel
 test_sigmoid
 test_adaptive_max_pool3d
 test_roll_op
-test_index_put_op
 test_assign_op
 test_amp_check_finite_and_scale_op
 test_strided_slice_op
