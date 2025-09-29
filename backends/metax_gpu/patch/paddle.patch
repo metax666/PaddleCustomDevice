@@ -869,19 +869,6 @@ index e838778952..83e805e75a 100644
  
  namespace phi {
  namespace fusion {
-diff --git a/paddle/phi/kernels/gpu/correlation_kernel.cu b/paddle/phi/kernels/gpu/correlation_kernel.cu
-index 4c93778bde..c7bdf8a2cc 100644
---- a/paddle/phi/kernels/gpu/correlation_kernel.cu
-+++ b/paddle/phi/kernels/gpu/correlation_kernel.cu
-@@ -103,7 +103,7 @@ void CorrelationCUDAKernel(const Context &dev_ctx,
-                            int stride2,
-                            int corr_type_multiply,
-                            DenseTensor *out) {
--  bool is_gpu_place = dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU;
-+  bool is_gpu_place = dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU || dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM;
-   PADDLE_ENFORCE_EQ(
-       is_gpu_place,
-       true,
 diff --git a/paddle/phi/kernels/gpu/depthwise_conv.h b/paddle/phi/kernels/gpu/depthwise_conv.h
 index f0cca0f701..02ea957240 100644
 --- a/paddle/phi/kernels/gpu/depthwise_conv.h
@@ -897,19 +884,6 @@ index f0cca0f701..02ea957240 100644
  
  namespace phi {
  // To determine use cudnn or not.
-diff --git a/paddle/phi/kernels/gpu/dgc_kernel.cu b/paddle/phi/kernels/gpu/dgc_kernel.cu
-index c2ddfa1347..c6adf5a6de 100644
---- a/paddle/phi/kernels/gpu/dgc_kernel.cu
-+++ b/paddle/phi/kernels/gpu/dgc_kernel.cu
-@@ -188,7 +188,7 @@ void DGCKernel(const Context& dev_ctx,
-   int buf_size = paddle::communication::dgc::get_buffer_size(k);
-   phi::Allocator::AllocationPtr tmp_ious_data;
- #if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
--  if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU) {
-+  if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU || dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM) {
-     tmp_ious_data = phi::memory_utils::Alloc(
-         dev_ctx.GetPlace(),
-         buf_size,
 diff --git a/paddle/phi/kernels/gpu/gelu_funcs.h b/paddle/phi/kernels/gpu/gelu_funcs.h
 index 29fa252e96..4ae72b0935 100644
 --- a/paddle/phi/kernels/gpu/gelu_funcs.h
@@ -974,19 +948,6 @@ index 1bdbe1564c..f753b54bc6 100644
  #include "paddle/phi/kernels/impl/qr_kernel_impl.h"
  #include "paddle/phi/kernels/impl/tril_triu_kernel_impl.h"
  #include "paddle/phi/kernels/lstsq_kernel.h"
-diff --git a/paddle/phi/kernels/gpu/shuffle_batch_kernel.cu b/paddle/phi/kernels/gpu/shuffle_batch_kernel.cu
-index 05a977828f..5136608c41 100644
---- a/paddle/phi/kernels/gpu/shuffle_batch_kernel.cu
-+++ b/paddle/phi/kernels/gpu/shuffle_batch_kernel.cu
-@@ -58,7 +58,7 @@ void ShuffleBatchKernel(const Context& dev_ctx,
-   int64_t seed_int = 0;
-   if (seed.initialized()) {
-     const auto& seed_place = seed.place().GetType();
--    bool is_gpu_place = seed_place == phi::AllocationType::GPU;
-+    bool is_gpu_place = seed_place == phi::AllocationType::GPU || seed_place == phi::AllocationType::CUSTOM;
-     if (is_gpu_place) {
-       // NOTE: We have overwritten GetKernelTypeForVar, so seed_place would
-       // not be CUDAPlace in practice. This case would only happen in Python
 diff --git a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h b/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
 index 9bc5326c90..79b57a8203 100644
 --- a/paddle/phi/kernels/impl/addmm_grad_kernel_impl.h
@@ -1144,32 +1105,6 @@ index 6f03f76eeb..5fe2c3e7dc 100644
  #include "paddle/phi/kernels/funcs/for_range.h"
  #include "paddle/phi/kernels/funcs/matrix_inverse.h"
  
-diff --git a/paddle/phi/kernels/impl/merged_momentum_impl.h b/paddle/phi/kernels/impl/merged_momentum_impl.h
-index 7b85903776..3f4b298807 100644
---- a/paddle/phi/kernels/impl/merged_momentum_impl.h
-+++ b/paddle/phi/kernels/impl/merged_momentum_impl.h
-@@ -297,7 +297,7 @@ void MergedMomentumInnerCompute(
-                 params_out[idx],
-                 velocities_out[idx]);
-         VLOG(10) << "Launch MergedMomentum cpu kernel.";
--      } else if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU) {
-+      } else if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU || dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM) {
-         phi::funcs::ForRange<Context> for_range(
-             static_cast<const Context &>(dev_ctx), params[idx]->numel());
-         const auto grad_type = grads[idx]->dtype();
-diff --git a/paddle/phi/kernels/impl/momentum_kernel_impl.h b/paddle/phi/kernels/impl/momentum_kernel_impl.h
-index de5bcfc30b..eb2a9714f5 100644
---- a/paddle/phi/kernels/impl/momentum_kernel_impl.h
-+++ b/paddle/phi/kernels/impl/momentum_kernel_impl.h
-@@ -457,7 +457,7 @@ void MomentumDenseImpl(const Context& dev_ctx,
-             regularization_coeff,
-             param_out,
-             velocity_out);
--  } else if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU) {
-+  } else if (dev_ctx.GetPlace().GetType() == phi::AllocationType::GPU || dev_ctx.GetPlace().GetType() == phi::AllocationType::CUSTOM) {
-     funcs::ForRange<Context> for_range(dev_ctx, param.numel());
-     const auto grad_type = grad.dtype();
- #define PADDLE_LAUNCH_DENSE_MOMENTUM_KERNEL(__nesterov, __reg_type)     \
 diff --git a/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h b/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
 index 4099d8b506..baef2cd643 100644
 --- a/paddle/phi/kernels/impl/spectral_norm_kernel_impl.h
