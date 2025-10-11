@@ -648,6 +648,7 @@ file(
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/rms_norm_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/lars_momentum_kernel.cu
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/gpu/partial_sum_kernel.cu
+  ${PADDLE_SOURCE_DIR}/paddle/phi/backends/gpu/gpu_info.cc
   # ############################################################################
   ${PADDLE_SOURCE_DIR}/paddle/phi/kernels/selected_rows/gpu/adamw_kernel.cu
   # kernels/kps
@@ -687,6 +688,7 @@ file(
   RELATIVE ${CMAKE_SOURCE_DIR}
   runtime/runtime.cc
   passes/*.cc
+  common/*.cc
   kernels/*.cc
   kernels/*.cu
   kernels/fusion/*.cc
