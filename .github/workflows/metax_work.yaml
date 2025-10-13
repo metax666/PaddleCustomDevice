@@ -7,6 +7,7 @@ on:
     branches: [develop, release/**]
     paths:
       - "**"
+      - "Paddle/**"
       - "!backends/**"
       - "backends/metax_gpu/**"
 
