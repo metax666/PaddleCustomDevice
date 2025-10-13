@@ -942,6 +942,19 @@ index f0cca0f701..02ea957240 100644
  
  namespace phi {
  // To determine use cudnn or not.
+diff --git a/paddle/phi/kernels/gpu/dot_kernel.cu b/paddle/phi/kernels/gpu/dot_kernel.cu
+index af27ac89ab..ee0edc6b8e 100644
+--- a/paddle/phi/kernels/gpu/dot_kernel.cu
++++ b/paddle/phi/kernels/gpu/dot_kernel.cu
+@@ -15,7 +15,7 @@
+ #include "paddle/phi/kernels/dot_kernel.h"
+ #include "paddle/phi/backends/gpu/gpu_context.h"
+ #include "paddle/phi/core/kernel_registry.h"
+-#include "paddle/phi/kernels/funcs/blas/blas.h"
++#include "kernels/funcs/blas/blas.h"
+ #include "paddle/phi/kernels/funcs/eigen/common.h"
+ 
+ #include "paddle/phi/kernels/full_kernel.h"
 diff --git a/paddle/phi/kernels/gpu/gelu_funcs.h b/paddle/phi/kernels/gpu/gelu_funcs.h
 index 29fa252e96..4ae72b0935 100644
 --- a/paddle/phi/kernels/gpu/gelu_funcs.h
