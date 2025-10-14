@@ -40,7 +40,7 @@ jobs:
             git fetch origin pull/${{ github.event.pull_request.number }}/head:pull/${{ github.event.pull_request.number }}/head
             git checkout pull/${{ github.event.pull_request.number }}/head
 
-            # git submodule update --init --recursive
+            git submodule update --init --recursive
           fi
 
 
