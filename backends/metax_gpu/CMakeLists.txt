@@ -703,9 +703,9 @@ file(
 set(CUSTOM_DEVICE_SRCS ${CUDA_SRCS} ${CC_SRCS} ${ERNIE_CORE_SRCS})
 
 set_source_files_properties(${CUSTOM_DEVICE_SRCS} PROPERTIES LANGUAGE CUDA)
-
+set(MACA_PATH $ENV{MACA_PATH})
 set(CMAKE_CUCC_COMPILER "cucc")
-set(CMAKE_CUCC_FLAGS "-I /opt/maca/tools/cu-bridge/include/")
+set(CMAKE_CUCC_FLAGS "-I ${MACA_PATH}/tools/cu-bridge/include/")
 
 add_library(${TARGET_NAME} SHARED ${CUSTOM_DEVICE_SRCS})
 
@@ -734,9 +734,9 @@ target_link_libraries(
   ${WARPRNNT_LIBRARIES}
   ${PADDLE_CORE_LIB})
 
-target_link_libraries(${TARGET_NAME} /opt/maca/lib/libmccl.so)
-target_link_libraries(${TARGET_NAME} /opt/maca/lib/libmcFlashAttn.so)
-target_link_libraries(${TARGET_NAME} /opt/maca/lib/libmcpti.so)
+target_link_libraries(${TARGET_NAME} ${MACA_PATH}/lib/libmccl.so)
+target_link_libraries(${TARGET_NAME} ${MACA_PATH}/lib/libmcFlashAttn.so)
+target_link_libraries(${TARGET_NAME} ${MACA_PATH}/lib/libmcpti.so)
 
 include_directories(BEFORE ${PADDLE_SOURCE_DIR})
 
