@@ -42,7 +42,7 @@ jobs:
             if [ $change_numbers -ne $change_backend ]; then
               echo "Common file changed, continue to run metax FULL CI test ..."
             elif [ $paddle_branch -eq 0 ] ; then
-              echo "NO metax backend changes found, skip metax FULL CI ...."
+              echo "NO metax backend changes found, skip metax FULL CI ....."
               exit 0
             fi
 
@@ -58,6 +58,7 @@ jobs:
           bash build.sh
 
       - name: run test
+
         run: |
           cd backends/metax_gpu/tests
           bash run_test.sh -j 16
