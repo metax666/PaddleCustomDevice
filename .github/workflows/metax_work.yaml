@@ -33,7 +33,6 @@ jobs:
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             git fetch origin pull/${{ github.event.pull_request.number }}/head:pull/${{ github.event.pull_request.number }}/head
             git checkout pull/${{ github.event.pull_request.number }}/head
-
             paddle_branch=${{ github.base_ref || github.ref_name}}
             change_numbers=$(git diff --name-only remotes/origin/${paddle_branch} | wc -l)
             change_backend=$(git diff --name-only remotes/origin/${paddle_branch} | grep "backends/"| wc -l)
