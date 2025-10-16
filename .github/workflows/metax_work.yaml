@@ -5,11 +5,6 @@ on:
   pull_request:
     types: [opened, synchronize]
     branches: [develop, release/**]
-    paths:
-      - "**"
-      - "Paddle/**"
-      - "!backends/**"
-      - "backends/metax_gpu/**"
 permissions: read-all
 
 defaults:
