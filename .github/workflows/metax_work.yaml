@@ -54,7 +54,7 @@ jobs:
 
       - name: compile
         run: |
-          sleep 10000
+          # sleep 10000
           cd backends/metax_gpu
           bash build.sh
 
