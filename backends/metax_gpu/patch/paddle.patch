@@ -50,7 +50,7 @@ index 62beb53cfe..0b0ac09fc0 100644
      }                                                                       \
    };                                                                        \
 diff --git a/paddle/phi/backends/dynload/cublasLt.h b/paddle/phi/backends/dynload/cublasLt.h
-index 0527e743e7..247a844f18 100644
+index 8b2e08c777..ca926df151 100644
 --- a/paddle/phi/backends/dynload/cublasLt.h
 +++ b/paddle/phi/backends/dynload/cublasLt.h
 @@ -46,12 +46,14 @@ extern void *cublasLt_dso_handle;
@@ -68,7 +68,7 @@ index 0527e743e7..247a844f18 100644
    extern DynLoad__##__name __name
 -
  // APIs available after CUDA 11.1
- #if CUDA_VERSION >= 11010
+ #if CUDA_VERSION >= 11010 || defined(PADDLE_WITH_CUSTOM_DEVICE)
  #define CUBLASLT_BLAS_ROUTINE_EACH(__macro)         \
 @@ -79,8 +81,8 @@ extern void *cublasLt_dso_handle;
    __macro(cublasLtMatmulAlgoConfigGetAttribute);    \
@@ -440,6 +440,7 @@ index 024a7de73e..66b373d698 100644
      }                                                              \
    } while (0)
  #elif defined(__HIPCC__)
+
 diff --git a/paddle/phi/kernels/funcs/blas/blaslt_gemm_search.h b/paddle/phi/kernels/funcs/blas/blaslt_gemm_search.h
 index e63b3d2f6e..95d7e6f204 100644
 --- a/paddle/phi/kernels/funcs/blas/blaslt_gemm_search.h
@@ -470,7 +471,7 @@ index e63b3d2f6e..95d7e6f204 100644
          for (const auto& [seed, algo] : algo_caches_) {
            outfile << seed << " ";
 diff --git a/paddle/phi/kernels/funcs/cublaslt.h b/paddle/phi/kernels/funcs/cublaslt.h
-index e7e1dd2370..583c7d6474 100644
+index fbbf57c25a..f690db59e9 100644
 --- a/paddle/phi/kernels/funcs/cublaslt.h
 +++ b/paddle/phi/kernels/funcs/cublaslt.h
 @@ -42,19 +42,11 @@ class CublasLtHelper {
@@ -569,20 +570,6 @@ index e5361b836e..5ad238df08 100644
    return val;
  }
  
-diff --git a/paddle/phi/kernels/funcs/quant_dequant.h b/paddle/phi/kernels/funcs/quant_dequant.h
-index 8f0736f64e..f11c29a6ef 100644
---- a/paddle/phi/kernels/funcs/quant_dequant.h
-+++ b/paddle/phi/kernels/funcs/quant_dequant.h
-@@ -19,9 +19,7 @@ limitations under the License. */
- #include "paddle/phi/backends/gpu/gpu_launch_config.h"
- #include "paddle/phi/common/transform.h"
- #include "paddle/phi/kernels/funcs/aligned_vector.h"
--#ifndef PADDLE_WITH_CUSTOM_DEVICE
- #include "paddle/phi/kernels/funcs/blas/blas.h"
--#endif
- namespace phi {
- 
- using backends::gpu::GpuLaunchConfig;
 diff --git a/paddle/phi/kernels/funcs/top_k_function_cuda.h b/paddle/phi/kernels/funcs/top_k_function_cuda.h
 index e30d440ff3..108edda7ca 100644
 --- a/paddle/phi/kernels/funcs/top_k_function_cuda.h
@@ -893,7 +880,7 @@ index b2d15a59f8..f64582e85a 100644
  namespace phi {
  namespace fusion {
 diff --git a/paddle/phi/kernels/gpu/depthwise_conv.h b/paddle/phi/kernels/gpu/depthwise_conv.h
-index f0cca0f701..02ea957240 100644
+index 2edac5eba5..4f265e3db7 100644
 --- a/paddle/phi/kernels/gpu/depthwise_conv.h
 +++ b/paddle/phi/kernels/gpu/depthwise_conv.h
 @@ -29,8 +29,8 @@ namespace cub = hipcub;
@@ -959,7 +946,7 @@ index 63c35dd4ee..15da9aea45 100644
  namespace phi {
  
 diff --git a/paddle/phi/kernels/gpu/lstsq_kernel.cu b/paddle/phi/kernels/gpu/lstsq_kernel.cu
-index 1bdbe1564c..f753b54bc6 100644
+index c7f27b2924..4cf6204ac7 100644
 --- a/paddle/phi/kernels/gpu/lstsq_kernel.cu
 +++ b/paddle/phi/kernels/gpu/lstsq_kernel.cu
 @@ -21,7 +21,7 @@
