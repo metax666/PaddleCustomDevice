@@ -573,9 +573,33 @@ class HpuFusedOperator : public HpuOperator {
     gemm_ins.push_back(y_tensor);
     if (!cast_x) {
       gemm_ins.push_back(inputs[2]);
+    } else {
+      synTensor d_scale_x_tensor =
+          cloneTensor(node_name + "_d_scale_x", inputs[2], syn_type_float);
+      std::vector<synTensor> reciprocal_in;
+      reciprocal_in.push_back(inputs[2]);
+      std::vector<synTensor> reciprocal_out;
+      reciprocal_out.push_back(d_scale_x_tensor);
+      AddNode_IO(reciprocal_in,
+                 reciprocal_out,
+                 "reciprocal_fwd_f32",
+                 node_name + "reciprocal_scale_x_");
+      gemm_ins.push_back(d_scale_x_tensor);
     }
     if (!cast_y) {
       gemm_ins.push_back(inputs[3]);
+    } else {
+      synTensor d_scale_y_tensor =
+          cloneTensor(node_name + "_d_scale_y", inputs[3], syn_type_float);
+      std::vector<synTensor> reciprocal_in;
+      reciprocal_in.push_back(inputs[3]);
+      std::vector<synTensor> reciprocal_out;
+      reciprocal_out.push_back(d_scale_y_tensor);
+      AddNode_IO(reciprocal_in,
+                 reciprocal_out,
+                 "reciprocal_fwd_f32",
+                 node_name + "reciprocal_scale_y_");
+      gemm_ins.push_back(d_scale_y_tensor);
     }
     AddNodeFP8Gemm<T>(gemm_ins, outputs, params, node_name);
   }
