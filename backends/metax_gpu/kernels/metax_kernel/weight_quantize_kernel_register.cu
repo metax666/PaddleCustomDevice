@@ -120,7 +120,7 @@ void WeightQuantizeKernel(const Context& dev_ctx,
                                  weight_shape,
                                  arch,
                                  algo);
-    out->Resize({m, n});
+    out->Resize({m, n / 2});
 #ifdef PADDLE_WITH_HIP
     DenseTensor x_int_tmp(out->type());
     x_int_tmp.Resize({m, n / 2});
