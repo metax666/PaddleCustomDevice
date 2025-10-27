@@ -116,6 +116,10 @@ PHI_DEFINE_EXPORTED_bool(use_fast_math,
                          false,
                          "Whether to use fast math GPU functions.");
 
+PHI_DEFINE_EXPORTED_bool(torch_compatible_kernel,
+                         false,
+                         "Whether use torch compatible version kernel.");
+
 #if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
 /**
  * FlashAttention related FLAG
