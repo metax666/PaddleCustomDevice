@@ -16,13 +16,59 @@
 
 #include <cstdint>
 
+#include "paddle/common/enforce.h"
 #include "paddle/phi/backends/gpu/gpu_launch_config.h"
 #include "paddle/phi/core/dense_tensor.h"
 #include "paddle/phi/core/kernel_registry.h"
 #include "paddle/phi/kernels/funcs/aligned_vector.h"
 #include "paddle/phi/kernels/funcs/common_shape.h"
+#include "paddle/phi/kernels/funcs/math_function.h"
 
 namespace phi {
+
+void show_2d_cpu_tensor(const DenseTensor& tensor,
+                        const int64_t row_num = 3,
+                        const int64_t col_num = 3) {
+  const int64_t rows = tensor.dims()[0];
+  const int64_t cols = tensor.dims()[1];
+  printf("\nTensor shape = [%d, %d]\n", rows, cols);
+
+  const int8_t* cpu_ptr = tensor.data<int8_t>();
+
+  for (int r = 0; r < row_num; r++) {
+    for (int c = 0; c < col_num; c++) {
+      int8_t val = *(cpu_ptr + r * cols + c);
+      printf("%d ", val);
+    }
+    printf("\n");
+  }
+  printf("\n\n");
+}
+
+void show_2d_gpu_tensor(const CustomContext& dev_ctx,
+                        const DenseTensor& tensor,
+                        const int64_t row_num = 3,
+                        const int64_t col_num = 3) {
+  phi::CPUPlace cpu_place;
+
+  DenseTensor cpu_tensor;
+  phi::Copy(dev_ctx, tensor, cpu_place, true, &cpu_tensor);
+
+  const int64_t rows = cpu_tensor.dims()[0];
+  const int64_t cols = cpu_tensor.dims()[1];
+  printf("\nTensor shape = [%d, %d]\n", rows, cols);
+
+  const int8_t* cpu_ptr = cpu_tensor.data<int8_t>();
+
+  for (int r = 0; r < row_num; r++) {
+    for (int c = 0; c < col_num; c++) {
+      int8_t val = *(cpu_ptr + r * cols + c);
+      printf("%d ", val);
+    }
+    printf("\n");
+  }
+  printf("\n\n");
+}
 
 void cpu_2d_tensor_transpose(const DenseTensor& input_data,
                              DenseTensor* transposed_data) {
@@ -85,21 +131,132 @@ void cpu_int4_quanted_weight_col_pack(const DenseTensor& unpacked_data,
   }
 }
 
-void show_2d_cpu_tensor(const DenseTensor& tensor, const int64_t size = 3) {
-  const int64_t rows = tensor.dims()[0];
-  const int64_t cols = tensor.dims()[1];
-  printf("\nTensor shape = [%d, %d]\n", rows, cols);
+void cpu_int4_quantized_weight_layout_trans_impl(
+    const CustomContext& dev_ctx,
+    const std::vector<int64_t>& shape,
+    DenseTensor* out) {
+  const int64_t m = shape[0];
+  const int64_t n = shape[1];
 
-  const int8_t* cpu_ptr = tensor.data<int8_t>();
+  phi::CPUPlace cpu_place;
 
-  for (int r = 0; r < size; r++) {
-    for (int c = 0; c < size; c++) {
-      int8_t val = *(cpu_ptr + r * cols + c);
-      printf("%d ", val);
-    }
-    printf("\n");
+  out->Resize({m / 2, n});
+
+  DenseTensor out_cpu_tensor;
+  phi::Copy(dev_ctx, (*out), cpu_place, true, &out_cpu_tensor);
+
+  // raw unpack
+  DenseTensor raw_unpack_tensor;
+  raw_unpack_tensor.Resize({out_cpu_tensor.dims()[0] * 2, n});
+  raw_unpack_tensor.mutable_data<int8_t>(cpu_place);
+  cpu_int4_quanted_weight_raw_unpack(out_cpu_tensor, &raw_unpack_tensor);
+
+  // transpose
+  DenseTensor transposed_tensor;
+  transposed_tensor.Resize(
+      {raw_unpack_tensor.dims()[1], raw_unpack_tensor.dims()[0]});
+  transposed_tensor.mutable_data<int8_t>(cpu_place);
+  cpu_2d_tensor_transpose(raw_unpack_tensor, &transposed_tensor);
+
+  // col pack
+  out_cpu_tensor.Resize(
+      {transposed_tensor.dims()[0], transposed_tensor.dims()[1] / 2});
+  cpu_int4_quanted_weight_col_pack(transposed_tensor, &out_cpu_tensor);
+
+  out_cpu_tensor.Resize({n / 2, m});
+  out->Resize({n / 2, m});
+  phi::Copy(dev_ctx, out_cpu_tensor, dev_ctx.GetPlace(), true, out);
+}
+
+__global__ void int4_quanted_matrix_raw_unpack_kernel(const int8_t* mat,
+                                                      int8_t* unpack_mat,
+                                                      int M,
+                                                      int N) {
+  int global_idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+  int i = global_idx / N;
+  int j = global_idx % N;
+
+  if (global_idx >= M * N) {
+    return;
   }
-  printf("\n\n");
+
+  int8_t val = mat[global_idx];
+  int8_t low = val & 0x0F;
+  int8_t mask = ((low & 0x80) == 0) & ((low & 0x78) != 0);
+  low -= 16 * mask;
+
+  int8_t high = (val >> 4) & 0x0F;
+  mask = ((high & 0x80) == 0) & ((high & 0x78) != 0);
+  high -= 16 * mask;
+
+  int output_global_idx0 = (2 * i) * N + j;
+  int output_global_idx1 = (2 * i + 1) * N + j;
+
+  unpack_mat[output_global_idx0] = low;
+  unpack_mat[output_global_idx1] = high;
+}
+
+__global__ void int4_quanted_matrix_col_pack_kernel(const int8_t* mat,
+                                                    int8_t* pack_mat,
+                                                    int M,
+                                                    int N) {
+  int global_idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+  int i = global_idx / N;
+  int j = global_idx % N;
+
+  if (global_idx >= M * N) {
+    return;
+  }
+
+  int mat_global_idx0 = i * 2 * N + 2 * j;
+  int mat_global_idx1 = i * 2 * N + 2 * j + 1;
+
+  int8_t low = mat[mat_global_idx0] & 0x0F;
+  low = low + ((low >> 3) & 1) * 16;
+
+  int8_t high = mat[mat_global_idx1] & 0x0F;
+  high = high + ((high >> 3) & 1) * 16;
+
+  pack_mat[global_idx] = ((high << 4) & 0xf0) | (low & 0x0f);
+}
+
+void gpu_int4_quantized_weight_layout_trans_impl(
+    const CustomContext& dev_ctx,
+    const std::vector<int64_t>& shape,
+    DenseTensor* out) {
+  int64_t total_m = shape[0];
+  int64_t total_n = shape[1];
+  out->Resize({total_m / 2, total_n});
+
+  DenseTensor unpack_mat(out->type());
+  unpack_mat.Resize({total_m, total_n});
+  dev_ctx.template Alloc<int8_t>(&unpack_mat);
+
+  constexpr int kBlockSize = 64;
+  int64_t kGridSize = (out->numel() + kBlockSize - 1) / kBlockSize;
+  int4_quanted_matrix_raw_unpack_kernel<<<kGridSize, kBlockSize>>>(
+      out->data<int8_t>(),
+      unpack_mat.data<int8_t>(),
+      out->dims()[0],
+      out->dims()[1]);
+
+  DenseTensor transposed_tensor;
+  transposed_tensor.Resize({unpack_mat.dims()[1], unpack_mat.dims()[0]});
+  dev_ctx.template Alloc<int8_t>(&transposed_tensor);
+  std::vector<int> axis = {1, 0};
+  funcs::Transpose<CustomContext, int8_t, 2> trans;
+  trans(dev_ctx, unpack_mat, &transposed_tensor, axis);
+
+  out->Resize({transposed_tensor.dims()[0], transposed_tensor.dims()[1] / 2});
+  int4_quanted_matrix_col_pack_kernel<<<kGridSize, kBlockSize>>>(
+      transposed_tensor.data<int8_t>(),
+      out->data<int8_t>(),
+      out->dims()[0],
+      out->dims()[1]);
+
+  out->Resize({total_n / 2, total_m});
 }
 
 template <typename Context>
@@ -107,38 +264,13 @@ void MetaxQuantizedWeightLayoutTrans(const Context& dev_ctx,
                                      const std::string& algo,
                                      const std::vector<int64_t>& shape,
                                      DenseTensor* out) {
-  const int64_t m = shape[0];
-  const int64_t n = shape[1];
-
-  phi::CPUPlace cpu_place;
-
   if (algo == "weight_only_int4") {
-    out->Resize({m / 2, n});
+    if (dev_ctx.GetPlace() == phi::CPUPlace()) {
+      cpu_int4_quantized_weight_layout_trans_impl(dev_ctx, shape, out);
+    } else {
+      gpu_int4_quantized_weight_layout_trans_impl(dev_ctx, shape, out);
+    }
 
-    DenseTensor out_cpu_tensor;
-    phi::Copy(dev_ctx, (*out), cpu_place, true, &out_cpu_tensor);
-
-    // raw unpack
-    DenseTensor raw_unpack_tensor;
-    raw_unpack_tensor.Resize({out_cpu_tensor.dims()[0] * 2, n});
-    raw_unpack_tensor.mutable_data<int8_t>(cpu_place);
-    cpu_int4_quanted_weight_raw_unpack(out_cpu_tensor, &raw_unpack_tensor);
-
-    // transpose
-    DenseTensor transposed_tensor;
-    transposed_tensor.Resize(
-        {raw_unpack_tensor.dims()[1], raw_unpack_tensor.dims()[0]});
-    transposed_tensor.mutable_data<int8_t>(cpu_place);
-    cpu_2d_tensor_transpose(raw_unpack_tensor, &transposed_tensor);
-
-    // col pack
-    out_cpu_tensor.Resize(
-        {transposed_tensor.dims()[0], transposed_tensor.dims()[1] / 2});
-    cpu_int4_quanted_weight_col_pack(transposed_tensor, &out_cpu_tensor);
-
-    out_cpu_tensor.Resize({n / 2, m});
-    out->Resize({n / 2, m});
-    phi::Copy(dev_ctx, out_cpu_tensor, dev_ctx.GetPlace(), true, out);
   } else {
     PADDLE_FATAL(
         "The algo must be in ['weight_only_int4'"
