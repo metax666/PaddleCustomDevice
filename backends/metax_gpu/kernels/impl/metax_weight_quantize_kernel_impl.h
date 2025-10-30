@@ -25,7 +25,7 @@
 #include "paddle/phi/kernels/funcs/math_function.h"
 
 namespace phi {
-
+template <typename DataType>
 void show_2d_cpu_tensor(const DenseTensor& tensor,
                         const int64_t row_num = 3,
                         const int64_t col_num = 3) {
@@ -33,18 +33,18 @@ void show_2d_cpu_tensor(const DenseTensor& tensor,
   const int64_t cols = tensor.dims()[1];
   printf("\nTensor shape = [%d, %d]\n", rows, cols);
 
-  const int8_t* cpu_ptr = tensor.data<int8_t>();
+  const DataType* cpu_ptr = tensor.data<DataType>();
 
   for (int r = 0; r < row_num; r++) {
     for (int c = 0; c < col_num; c++) {
-      int8_t val = *(cpu_ptr + r * cols + c);
-      printf("%d ", val);
+      DataType val = *(cpu_ptr + r * cols + c);
+      printf("%#x ", val);
     }
     printf("\n");
   }
   printf("\n\n");
 }
-
+template <typename DataType>
 void show_2d_gpu_tensor(const CustomContext& dev_ctx,
                         const DenseTensor& tensor,
                         const int64_t row_num = 3,
@@ -58,14 +58,35 @@ void show_2d_gpu_tensor(const CustomContext& dev_ctx,
   const int64_t cols = cpu_tensor.dims()[1];
   printf("\nTensor shape = [%d, %d]\n", rows, cols);
 
-  const int8_t* cpu_ptr = cpu_tensor.data<int8_t>();
+  const DataType* cpu_ptr = cpu_tensor.data<DataType>();
 
   for (int r = 0; r < row_num; r++) {
     for (int c = 0; c < col_num; c++) {
-      int8_t val = *(cpu_ptr + r * cols + c);
-      printf("%d ", val);
+      DataType val = *(cpu_ptr + r * cols + c);
+      printf("%#x ", val);
     }
     printf("\n");
+  }
+  printf("\n\n");
+}
+
+template <typename DataType>
+void show_1d_gpu_tensor(const CustomContext& dev_ctx,
+                        const DenseTensor& tensor,
+                        const int64_t num = 3) {
+  phi::CPUPlace cpu_place;
+
+  DenseTensor cpu_tensor;
+  phi::Copy(dev_ctx, tensor, cpu_place, true, &cpu_tensor);
+
+  const int64_t nums = cpu_tensor.numel();
+  printf("\nTensor shape = [%d]\n", nums);
+
+  const DataType* cpu_ptr = cpu_tensor.data<DataType>();
+
+  for (int n = 0; n < num; n++) {
+    DataType val = *(cpu_ptr + n);
+    printf("%#x ", val);
   }
   printf("\n\n");
 }
