@@ -101,18 +101,6 @@ PHI_DEFINE_EXPORTED_bool(
     "faster but it may loss precision in most case. If true, the compute "
     "type will be set to fp16. Default is false.");
 
-/**
- * Torch Compatible related FLAG
- * Name: FLAGS_torch_compatible_kernel
- * Since Version: 3.2.2
- * Value Range: bool, default=false
- * Example:
- * Note: Whether use torch compatible version kernel.
- */
-PHI_DEFINE_EXPORTED_bool(torch_compatible_kernel,
-                         false,
-                         "Whether use torch compatible version kernel.");
-
 PHI_DEFINE_EXPORTED_string(
     selected_gpus,
     "",
