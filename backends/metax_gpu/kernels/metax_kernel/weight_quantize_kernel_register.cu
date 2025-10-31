@@ -116,7 +116,7 @@ void WeightQuantizeKernel(const Context& dev_ctx,
     dev_ctx.template Alloc<T>(scale);
     weight_quant_gpu<T, Context>(dev_ctx,
                                  x.data<T>(),
-                                 out->data<int8_t>(),
+                                 quanted_x.data<int8_t>(),
                                  scale->data<T>(),
                                  weight_shape,
                                  arch,
@@ -141,7 +141,13 @@ void WeightQuantizeKernel(const Context& dev_ctx,
     //                             arch,
     //                             algo);
 #endif
-    MetaxQuantizedWeightLayoutTrans<Context>(dev_ctx, algo, weight_shape, out);
+    quanted_x.Resize({m / 2, n});
+
+    std::vector<int> axis = {1, 0};
+    funcs::Transpose<Context, int8_t, 2> trans;
+    trans(dev_ctx, quanted_x, out, axis);
+
+    out->Resize({n / 2, m});
   } else if (algo == "w4a8") {
     weight_permute_gpu_w4a8<Context>(dev_ctx,
                                      x.data<int8_t>(),
