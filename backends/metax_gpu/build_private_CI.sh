@@ -39,6 +39,11 @@ echo "🌐 正在拉取远程最新的 dev (develop) 分支代码..."
 # 拉取 develop 分支的最新代码（与远程同步）
 git pull origin develop
 
+echo "🔗 当前分支: $(git branch --show-current)"
+echo "📌 最新 commit hash (短): $(git rev-parse --short HEAD)"
+echo "📌 最新 commit 信息:"
+git log -1 --oneline
+
 # 提示完成
 echo "✅ 脚本执行完毕！"
 echo "📌 已撤销本地修改，并更新到 Paddle 最新的 develop (dev) 分支代码。"
@@ -62,6 +67,7 @@ export CUCC_PATH=${MACA_PATH}/tools/cu-bridge
 export PATH=${PATH}:${CUCC_PATH}/tools:${CUCC_PATH}/bin
 export PATH=${MACA_PATH}/bin:${PATH}
 export LD_LIBRARY_PATH=${MACA_PATH}/lib:${MACA_PATH}/mxgpu_llvm/lib:${LD_LIBRARY_PATH}
+
 
 if [ ! -d build ]; then
     echo "build directory not found, creating..."
