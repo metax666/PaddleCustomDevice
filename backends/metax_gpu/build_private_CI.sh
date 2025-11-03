@@ -51,7 +51,7 @@ python -m pip install --pre paddlepaddle -i https://www.paddlepaddle.org.cn/pack
 
 
 # unset http_proxy https_proxy
-
+cd -
 # apply patch
 bash change_patch.sh
 
