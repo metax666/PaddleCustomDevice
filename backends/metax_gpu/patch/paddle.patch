@@ -98,10 +98,10 @@ index 8b2e08c777..ca926df151 100644
  #define CUBLASLT_BLAS_ROUTINE_EACH(__macro)      \
    __macro(cublasLtCreate);                       \
 diff --git a/paddle/phi/backends/dynload/cudnn.h b/paddle/phi/backends/dynload/cudnn.h
-index a943bbed9a..eb5ea78cde 100644
+index a943bbed9a..af931490e3 100644
 --- a/paddle/phi/backends/dynload/cudnn.h
 +++ b/paddle/phi/backends/dynload/cudnn.h
-@@ -38,7 +38,11 @@ extern void EnforceCUDNNLoaded(const char* fn_name);
+@@ -38,7 +38,10 @@ extern void EnforceCUDNNLoaded(const char* fn_name);
          cudnn_dso_handle = phi::dynload::GetCUDNNDsoHandle();        \
        });                                                            \
        EnforceCUDNNLoaded(#__name);                                   \
@@ -109,8 +109,7 @@ index a943bbed9a..eb5ea78cde 100644
 +      std::string replaced_name = #__name;                                  \
 +      replaced_name = replaced_name.replace(0, 2, "mc");                    \
 +      static void* p_##__name =                                             \
-+          dlsym(cublasLt_dso_handle, replaced_name.c_str());                \
-+
++          dlsym(cudnn_dso_handle, replaced_name.c_str());                \
        return reinterpret_cast<cudnn_func>(p_##__name)(args...);      \
      }                                                                \
    };                                                                 \
