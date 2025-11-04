@@ -83,3 +83,9 @@ echo "install whl"
 pip install dist/paddle_metax_gpu*.whl --force-reinstall
 cd ..
 echo "Done!"
+
+cd build/dist/
+ossutil ls oss://opensource-ci/paddle/
+ossutil cat oss://opensource-ci/paddle/test1
+ossutil cp ./ oss://opensource-ci/paddle/test1
+cd -
