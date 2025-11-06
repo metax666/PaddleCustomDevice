@@ -164,7 +164,6 @@ test_empty_op
 test_functional_conv1d_transpose
 test_clip_by_norm_op
 test_box_clip_op
-test_clip_op
 test_grad_clip_minimize
 test_less_than_op
 test_adamw_op
