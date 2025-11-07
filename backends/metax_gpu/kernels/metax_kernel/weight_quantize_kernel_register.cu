@@ -116,12 +116,11 @@ void WeightQuantizeKernel(const Context& dev_ctx,
     dev_ctx.template Alloc<T>(scale);
     weight_quant_gpu<T, Context>(dev_ctx,
                                  x.data<T>(),
-                                 out->data<int8_t>(),
+                                 quanted_x.data<int8_t>(),
                                  scale->data<T>(),
                                  weight_shape,
                                  arch,
                                  algo);
-    out->Resize({m, n});
 #ifdef PADDLE_WITH_HIP
     DenseTensor x_int_tmp(out->type());
     x_int_tmp.Resize({m, n / 2});
