@@ -1,4 +1,4 @@
-// Copyright (c) 2023 PaddlePaddle Authors. All Rights Reserved.
+// Copyright (c) 2025 PaddlePaddle Authors. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "paddle/phi/backends/gpu/gpu_context.h"
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/gammaincc_kernel.h"
-#include "paddle/phi/kernels/impl/gammaincc_kernel_impl.h"
+#include "paddle/phi/kernels/funcs/fused_gemm_epilogue.h"
+#include "paddle/phi/kernels/fusion/gpu/fused_gemm_epilogue_grad_kernel.cu"  //NOLINT
 
-PD_CUSTOM_KERNEL_REGISTER(
-    gammaincc, iluvatar_gpu, ALL_LAYOUT, phi::GammainccKernel, float, double) {}
+PD_CUSTOM_KERNEL_REGISTER(fused_gemm_epilogue_grad,
+                          metax_gpu,
+                          ALL_LAYOUT,
+                          phi::fusion::FusedGemmEpilogueGradKernel,
+                          float,
+                          double,
+                          phi::float16,
+                          phi::bfloat16) {}

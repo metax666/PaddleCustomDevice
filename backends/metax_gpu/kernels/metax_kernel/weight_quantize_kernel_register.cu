@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include "../impl/metax_weight_quantize_kernel_impl.h"
 #include "paddle/common/enforce.h"
 #include "paddle/phi/backends/gpu/gpu_context.h"
 #include "paddle/phi/common/datatype_traits.h"
@@ -141,6 +142,13 @@ void WeightQuantizeKernel(const Context& dev_ctx,
     //                             arch,
     //                             algo);
 #endif
+    quanted_x.Resize({m / 2, n});
+
+    std::vector<int> axis = {1, 0};
+    funcs::Transpose<Context, int8_t, 2> trans;
+    trans(dev_ctx, quanted_x, out, axis);
+
+    out->Resize({n / 2, m});
   } else if (algo == "w4a8") {
     weight_permute_gpu_w4a8<Context>(dev_ctx,
                                      x.data<int8_t>(),
