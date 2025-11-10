@@ -87,5 +87,5 @@ echo "Done!"
 cd build/dist/
 ossutil ls oss://opensource-ci/paddle/
 ossutil cat oss://opensource-ci/paddle/test1
-ossutil cp ./paddle_metax_gpu-*.whl oss://opensource-ci/paddle/test1
+ossutil cp ./paddle_metax_gpu-*.whl oss://opensource-ci/paddle/test1/
 cd -
