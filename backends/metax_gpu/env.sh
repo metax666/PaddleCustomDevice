@@ -14,7 +14,7 @@
 
 DEFAULT_DIR="/opt/maca"
 export MACA_PATH=${1:$DEFAULT_DIR}
-export CUDA_PATH=/workspace/cuda-11.7/
+export CUDA_PATH=/usr/local/cuda
 export PATH=${CUDA_PATH}/bin:${PATH}
 export CUCC_PATH=${MACA_PATH}/tools/cu-bridge
 export PATH=${PATH}:${CUCC_PATH}/tools:${CUCC_PATH}/bin
