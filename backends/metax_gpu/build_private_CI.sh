@@ -88,5 +88,5 @@ cd build/dist/
 ossutil ls oss://opensource-ci/paddle/
 ossutil cat oss://opensource-ci/paddle/
 
-ossutil cp ./paddle_metax_gpu-*.whl oss://opensource-ci/paddle/
+ossutil cp ./paddle_metax_gpu-*.whl oss://opensource-ci/paddle/ -f
 cd -
