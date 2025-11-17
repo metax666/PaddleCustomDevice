@@ -343,7 +343,7 @@ index 092365a961..23d3b65dc6 100644
    const int warpSize = 32;
    __shared__ T shm[warpSize];
 -  unsigned mask = 0u;
-+  unsigned long long mask = 0u;
++  unsigned long long mask = 0ull;
    CREATE_SHFL_MASK(mask, tid < len);
  
    for (int offset = warpSize / 2; offset > 0; offset /= 2)
