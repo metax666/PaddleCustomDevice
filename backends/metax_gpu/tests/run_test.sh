@@ -16,6 +16,7 @@
 # limitations under the License.
 
 # pip install scipy -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple some-package
+pip install numpy==2.2.6 -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
 SCRIPT_DIR=$(dirname "$0")
 LEGACY_TEST_PATH="${SCRIPT_DIR}/../../../Paddle/test/legacy_test"
 TEST_PATH1="${SCRIPT_DIR}/../../../python"
