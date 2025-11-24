@@ -49,7 +49,7 @@ jobs:
 
   metax:
     name: metax
-    uses: ./.github/workflows/_Metax-X86.yaml
+    uses: ./.github/workflows/_Metax-X86.yml
     needs: [Codestyle-Check]
 
   #sdaa:
