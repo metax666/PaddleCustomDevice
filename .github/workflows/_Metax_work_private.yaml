@@ -50,13 +50,13 @@ jobs:
             change_metax_only=$(git diff --name-only remotes/origin/${paddle_branch} | grep -c "backends/metax_gpu" || true)
             echo $change_metax_only
 
-            # change_backend=$(git diff --name-only remotes/origin/${paddle_branch} | grep "backends/"| wc -l)
-            # echo $change_backend
-            # change_metax_only=$(git diff --name-only remotes/origin/${paddle_branch} | grep "backends/metax_gpu"| wc -l)
-            # echo $change_metax_only
+            change_backend=$(git diff --name-only remotes/origin/${paddle_branch} | grep "backends1/"| wc -l)
+            echo $change_backend
+            change_metax_only=$(git diff --name-only remotes/origin/${paddle_branch} | grep "backends1/metax_gpu"| wc -l)
+            echo $change_metax_only
 
             git diff --name-only remotes/origin/${paddle_branch}
-
+            sleep 1000
             if [ $change_numbers -ne $change_backend ]; then
               echo "Common file changed, continue to run metax FULL CI test ..."
             elif [ $paddle_branch -eq 0 ] ; then
