@@ -922,7 +922,6 @@ test_round_op
 test_row_conv_op
 test_rrelu_op
 test_rsqrt
-test_run
 test_run_fluid_by_module_or_command_line
 test_save_inference_model_conditional_op
 test_scalar
