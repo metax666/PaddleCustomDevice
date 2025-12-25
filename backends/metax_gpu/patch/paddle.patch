@@ -847,7 +847,7 @@ index b63ba7540c..c3583711c2 100644
  #include "paddle/phi/core/kernel_registry.h"
  #include "paddle/phi/kernels/funcs/aligned_vector.h"
 -#include "paddle/phi/kernels/fusion/gpu/mmha_util.cu.h"
-+#include "kernels/metax_kernel/mmha_util.cu.h"
++#include "kernels/custom_kernel/mmha_util.cu.h"
  
  namespace phi {
  namespace fusion {
@@ -860,7 +860,7 @@ index dbbc2a2166..eb3b7224f6 100644
  #include "paddle/phi/core/kernel_registry.h"
  #include "paddle/phi/kernels/funcs/aligned_vector.h"
 -#include "paddle/phi/kernels/fusion/gpu/mmha_util.cu.h"
-+#include "kernels/metax_kernel/mmha_util.cu.h"
++#include "kernels/custom_kernel/mmha_util.cu.h"
  
  namespace phi {
  namespace fusion {
