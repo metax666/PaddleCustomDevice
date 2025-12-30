@@ -1076,3 +1076,4 @@ test_zero_dim_unary_api
 test_zero_size
 test_zero_size_tensor
 test_zeros_op
+test_swiglu

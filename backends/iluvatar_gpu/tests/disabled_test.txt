@@ -17,6 +17,7 @@ test_dist*
 test_download.py
 test_fleet*
 test_gpu*
+test_hapi_hub.py
 test_io_save_load.py
 test_ir_graph.py
 test_jit*
@@ -548,4 +549,10 @@ test_linear_interp_v2_op.py
 test_nearest_interp_v2_op.py
 test_poisson_op.py
 test_rrelu_op.py
-test_tensor_cuda_static.py
+test_einsum_op.py
+test_nansum_api.py
+test_radam_op.py
+test_rms_norm_op.py
+test_batched_gemm.py
+test_match_matrix_tensor_op.py
+test_tensor.py
