@@ -23,15 +23,6 @@ pip install -r requirement.txt -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/
 # uninstall paddle
 pip  uninstall paddlepaddle -y
 
-
-# init paddle
-# git submodule sync --recursive && git submodule update --init --recursive
-
-
-# pip install parameterized safetensors==0.6.2 -i https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple some-package
-# install paddle
-
-
 python -m pip install --pre paddlepaddle -i https://www.paddlepaddle.org.cn/packages/nightly/cpu/
 
 
