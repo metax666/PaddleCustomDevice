@@ -46,7 +46,7 @@ fi
 
 echo "make_maca"
 cd build
-cmake_maca .. -DPython3_EXECUTABLE=$(which python3) -DWITH_GPU=ON
+cmake_maca .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DPython3_EXECUTABLE=$(which python3) -DWITH_GPU=ON -DCUDA_ARCH_NAME=Manual -DCUDA_ARCH_BIN="80"
 make_maca -j8
 
 echo "install whl"
