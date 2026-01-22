@@ -66,6 +66,9 @@ test_rms_norm_op
 test_rrelu_op
 test_run
 test_squeeze2_op
+test_geometric_inplace
+test_householder_product
+test_paddle_device
 
 [internet]
 test_hapi_amp
