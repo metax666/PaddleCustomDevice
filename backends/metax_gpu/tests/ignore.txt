@@ -48,6 +48,24 @@ test_einsum
 test_incubate_moe_gate_dispatch_partial_nosoftmaxtopk
 test_abs
 test_einsum_0d_tensor
+test_baddbmm_op
+test_cumprod_op
+test_deg2rad
+test_fp8_quant
+test_fractional_max_pool2d_op
+test_fractional_max_pool3d_op
+test_fused_adam_op
+test_fusion_seqconv_eltadd_relu_op
+test_i0_op
+test_i0e_op
+test_i1_op
+test_i1e_op
+test_instance_norm_op_v2
+test_linear_interp_v2_op
+test_rms_norm_op
+test_rrelu_op
+test_run
+test_squeeze2_op
 
 [internet]
 test_hapi_amp
