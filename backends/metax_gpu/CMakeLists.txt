@@ -30,7 +30,20 @@ include(paddle)
 set(THIRD_PARTY_PATH
     "${PADDLE_SOURCE_DIR}/build/third_party"
     CACHE PATH "Third party libraries directory.")
-
+if(WITH_ARM)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  set(WITH_XBYAK
+      OFF
+      CACHE STRING "Disable XBYAK when compiling WITH_ARM=ON." FORCE)
+  set(WITH_MKL
+      OFF
+      CACHE STRING "Disable MKL when compiling WITH_ARM=ON." FORCE)
+  set(WITH_AVX
+      OFF
+      CACHE STRING "Disable AVX when compiling WITH_ARM=ON." FORCE)
+  add_definitions(-DPADDLE_WITH_ARM)
+endif()
 include(version)
 include(generic)
 include(cblas)
