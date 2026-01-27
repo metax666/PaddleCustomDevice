@@ -815,6 +815,7 @@ target_compile_definitions(
          PADDLE_WITH_CUSTOM_DEVICE=1
          mcblasContext=cublasContext
          cublasLtContext=mcblasLtContext
+         cudnnContext==mcdnnContex
          GPUContext=CustomContext
          KPSContext=CustomContext
          STREAM_TYPE=cudaStream_t
