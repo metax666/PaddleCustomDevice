@@ -71,7 +71,7 @@ inline ncclDataType_t PDDataTypeToNcclDataType(C_DataType type) {
     return ncclFloat32;
   } else if (type == C_DataType::BFLOAT16) {
     return ncclBfloat16;
-  } else if (type == C_DataType::UINT8) {
+  } else if (type == C_DataType::UINT8 || type == C_DataType::BOOL) {
     return ncclUint8;
   } else if (type == C_DataType::UINT32) {
     return ncclUint32;
@@ -87,33 +87,6 @@ inline ncclDataType_t PDDataTypeToNcclDataType(C_DataType type) {
     return ncclFloat16;
   } else if (type == C_DataType::FLOAT64) {
     return ncclFloat64;
-  } else {
-    LOG(ERROR) << "Datatype " << type << " in nccl is not supported.";
-  }
-  return ncclFloat32;
-}
-
-inline mcclDataType_t PDDataTypeToMcclDataType(C_DataType type) {
-  if (type == C_DataType::FLOAT32) {
-    return mcclFloat32;
-  } else if (type == C_DataType::BFLOAT16) {
-    return mcclBfloat16;
-  } else if (type == C_DataType::UINT8) {
-    return mcclUint8;
-  } else if (type == C_DataType::UINT32) {
-    return mcclUint32;
-  } else if (type == C_DataType::UINT64) {
-    return mcclUint64;
-  } else if (type == C_DataType::INT8) {
-    return mcclInt8;
-  } else if (type == C_DataType::INT32) {
-    return mcclInt32;
-  } else if (type == C_DataType::INT64) {
-    return mcclInt64;
-  } else if (type == C_DataType::FLOAT16) {
-    return mcclFloat16;
-  } else if (type == C_DataType::FLOAT64) {
-    return mcclFloat64;
   } else {
     LOG(ERROR) << "Datatype " << type << " in nccl is not supported.";
   }
