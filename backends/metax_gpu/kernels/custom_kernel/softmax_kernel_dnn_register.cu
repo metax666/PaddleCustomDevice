@@ -13,13 +13,13 @@
 // limitations under the License.
 
 #include "paddle/phi/core/kernel_registry.h"
-#include "paddle/phi/kernels/softmax_kernel.h"
+#include "paddle/phi/kernels/gpudnn/softmax_kernel.cu"  // NOLINT
 
 PD_CUSTOM_KERNEL_REGISTER(softmax,
-                          metax_gpu,
+                          GPUDNN,
                           ALL_LAYOUT,
-                          phi::SoftmaxKernel,
+                          phi::SoftmaxGPUDNNKernel,
                           float,
                           double,
-                          phi::float16,
-                          phi::bfloat16) {}
+                          phi::dtype::float16,
+                          phi::dtype::bfloat16) {}
