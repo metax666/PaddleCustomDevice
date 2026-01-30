@@ -70,6 +70,7 @@ test_geometric_inplace
 test_householder_product
 test_paddle_device
 test_conv2d_op
+test_rnn_op
 
 [internet]
 test_hapi_amp
