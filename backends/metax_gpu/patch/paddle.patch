@@ -1101,16 +1101,4 @@ index d8bc15926b..6071baf340 100644
 
      PADDLE_ENFORCE_EQ(
          status,
-diff --git a/paddle/phi/backends/context_pool.cc b/paddle/phi/backends/context_pool.cc
-index 0495379383..9cbde17363 100644
---- a/paddle/phi/backends/context_pool.cc
-+++ b/paddle/phi/backends/context_pool.cc
-@@ -26,7 +26,7 @@ namespace phi {
- 
- #if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || \
-     defined(PADDLE_WITH_CUSTOM_DEVICE)
--bool allow_tf32_cublas = false;
-+bool allow_tf32_cublas = true;
- void SetAllowTF32Cublas(bool active) { allow_tf32_cublas = active; }
- bool AllowTF32Cublas() { return allow_tf32_cublas; }
- bool allow_tf32_cudnn = true;
+         
