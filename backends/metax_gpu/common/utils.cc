@@ -295,3 +295,14 @@ std::ostream& operator<<(std::ostream& os, const phi::DenseTensor& t) {
 #undef FOR_EACH_DATA_TYPE_TO_PRINT
 #undef CALL_PRINT_TENSOR
 }  // namespace phi
+
+// lock_mcruntime.c
+
+__attribute__((constructor)) void lock_mcruntime() {
+  void* handle =
+      dlopen("/opt/maca/lib/libmcruntime.so", RTLD_LAZY | RTLD_NODELETE);
+  if (!handle) {
+    fprintf(stderr, "Failed to lock libmcruntime.so: %s\n", dlerror());
+  } else {
+  }
+}
