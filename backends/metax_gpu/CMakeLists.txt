@@ -764,7 +764,9 @@ target_link_libraries(
 target_link_libraries(${TARGET_NAME} ${MACA_PATH}/lib/libmccl.so)
 target_link_libraries(${TARGET_NAME} ${MACA_PATH}/lib/libmcFlashAttn.so)
 target_link_libraries(${TARGET_NAME} ${MACA_PATH}/lib/libmcpti.so)
-
+target_link_options(${TARGET_NAME} PRIVATE
+    "-T${CMAKE_SOURCE_DIR}/my_script.lds"
+)
 include_directories(BEFORE ${PADDLE_SOURCE_DIR})
 
 target_compile_definitions(
