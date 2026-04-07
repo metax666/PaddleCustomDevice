@@ -1212,4 +1212,16 @@ index 7ced1fdc17..e49759ebb4 100644
  }
  
  template <typename T>
+diff --git a/paddle/phi/kernels/funcs/fft.cu b/paddle/phi/kernels/funcs/fft.cu
+index 5133e702d7..e8b574967d 100644
+--- a/paddle/phi/kernels/funcs/fft.cu
++++ b/paddle/phi/kernels/funcs/fft.cu
+@@ -172,7 +172,7 @@ void exec_fft(const phi::GPUContext& dev_ctx,
+   int64_t device_id = dev_ctx.GetPlace().GetDeviceId();
+   FFTConfig* config = nullptr;
+   std::unique_ptr<FFTConfig> config_ = nullptr;
+-  bool using_cache = use_cache(key.sizes_);
++  bool using_cache = false;//use_cache(key.sizes_);
  
+   if (using_cache) {
+     FFTConfigCache& plan_cache = get_fft_plan_cache(device_id);
