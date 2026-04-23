@@ -1050,3 +1050,70 @@ index d8bc15926b..6071baf340 100644
      PADDLE_ENFORCE_EQ(
          status,
          
+diff --git a/paddle/phi/kernels/funcs/top_k_cuda_kernel.h b/paddle/phi/kernels/funcs/top_k_cuda_kernel.h
+index 368cb21c21..f0f99fbd2f 100644
+--- a/paddle/phi/kernels/funcs/top_k_cuda_kernel.h
++++ b/paddle/phi/kernels/funcs/top_k_cuda_kernel.h
+@@ -167,7 +167,7 @@ struct Bitfield<unsigned int> {
+                                                              int pos,
+                                                              int len) {
+     unsigned int ret;
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+     ret = (val >> pos) & ((1u << len) - 1u);
+ #else
+     asm("bfe.u32 %0, %1, %2, %3;" : "=r"(ret) : "r"(val), "r"(pos), "r"(len));
+@@ -178,7 +178,7 @@ struct Bitfield<unsigned int> {
+   static __device__ __forceinline__ unsigned int setBitfield(
+       unsigned int val, unsigned int to_insert, int pos, int len) {
+     unsigned int ret;
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+     unsigned int mask = ((1u << len) - 1u) << pos;
+     ret = (val & ~mask) | ((to_insert << pos) & mask);
+ #else
+@@ -196,7 +196,7 @@ struct Bitfield<uint64_t> {
+                                                          int pos,
+                                                          int len) {
+     uint64_t ret;
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+     ret = (val >> pos) & ((1ULL << len) - 1ULL);
+ #else
+     asm("bfe.u64 %0, %1, %2, %3;" : "=l"(ret) : "l"(val), "r"(pos), "r"(len));
+@@ -209,7 +209,7 @@ struct Bitfield<uint64_t> {
+                                                          int pos,
+                                                          int len) {
+     uint64_t ret;
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+     uint64_t mask = ((1ULL << len) - 1ULL) << pos;
+     ret = (val & ~mask) | ((to_insert << pos) & mask);
+ #else
+@@ -223,7 +223,7 @@ struct Bitfield<uint64_t> {
+ 
+ // --- getLaneId / getLaneMaskLe ---
+ __device__ __forceinline__ int getLaneId() {
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+   return __lane_id();
+ #else
+   int laneId;
+@@ -233,7 +233,7 @@ __device__ __forceinline__ int getLaneId() {
+ }
+ 
+ __device__ __forceinline__ unsigned getLaneMaskLe() {
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+   // HIP warp size is 64, construct mask for lanes <= current lane
+   return (getLaneId() == 63) ? 0xFFFFFFFFFFFFFFFFULL
+                              : (1ULL << (getLaneId() + 1)) - 1ULL;
+@@ -245,7 +245,7 @@ __device__ __forceinline__ unsigned getLaneMaskLe() {
+ }
+ 
+ __device__ __forceinline__ unsigned getLaneMaskLt() {
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+   return (getLaneId() == 0) ? 0ULL : (1ULL << getLaneId()) - 1ULL;
+ #else
+   unsigned mask;
