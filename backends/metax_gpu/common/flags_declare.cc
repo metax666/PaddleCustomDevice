@@ -116,6 +116,18 @@ PHI_DEFINE_EXPORTED_bool(use_fast_math,
                          false,
                          "Whether to use fast math GPU functions.");
 
+PHI_DEFINE_EXPORTED_bool(
+    deterministic_rng,
+    false,
+    "Enable cross-device RNG consistency by fixing GPU kernel launch "
+    "configuration. When true, RNG kernels use a fixed grid/block size "
+    "so that the same seed produces identical results across GPU types.");
+
+PHI_DEFINE_EXPORTED_int32(
+    deterministic_rng_grid,
+    1024,
+    "Grid size cap when FLAGS_deterministic_rng is enabled.");
+
 #if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
 /**
  * FlashAttention related FLAG
