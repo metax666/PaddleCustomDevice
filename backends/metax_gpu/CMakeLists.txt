@@ -849,7 +849,7 @@ target_link_libraries(${TARGET_NAME} ${MACA_PATH}/lib/libmccl.so)
 target_link_libraries(${TARGET_NAME} ${MACA_PATH}/lib/libmcFlashAttn.so)
 target_link_libraries(${TARGET_NAME} ${MACA_PATH}/lib/libmcpti.so)
 
-target_link_options(${TARGET_NAME} PRIVATE "-T${CMAKE_SOURCE_DIR}/my_script.ld")
+target_link_options(${TARGET_NAME} PRIVATE "-T${CMAKE_SOURCE_DIR}/my_script.lds")
 
 if(WITH_CINN)
   message(STATUS "[MetaX] Linking CINN object library")
