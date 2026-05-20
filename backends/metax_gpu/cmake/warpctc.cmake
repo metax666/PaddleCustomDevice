@@ -73,8 +73,7 @@ set(WARPCTC_INCLUDE_DIR
     CACHE PATH "Warp-ctc Directory" FORCE)
 
 set(WARPCTC_METAX_PATCH
-    "/home/e25147/PaddleCustomDevice_debug/Paddle/third_party/warpctc/warpctc.patch"
-)
+    "${PADDLE_SOURCE_DIR}/third_party/warpctc/warpctc.patch")
 message(STATUS "warpctc: METAX patch at PATCH step: ${WARPCTC_METAX_PATCH}")
 
 # Used in unit test test_WarpCTCLayer
