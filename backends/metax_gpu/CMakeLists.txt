@@ -809,6 +809,11 @@ file(
 set(CUSTOM_DEVICE_SRCS ${CUDA_SRCS} ${CC_SRCS} ${ERNIE_CORE_SRCS})
 
 set_source_files_properties(${CUSTOM_DEVICE_SRCS} PROPERTIES LANGUAGE CUDA)
+# 为weight_only_linear_kernel.cu添加Metax GPU架构支持
+set_source_files_properties(
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernels/custom_kernel/weight_only_linear_kernel.cu
+  PROPERTIES COMPILE_OPTIONS "--offload-arch=xcore1000;--offload-arch=xcore1500")
+
 set(MACA_PATH $ENV{MACA_PATH})
 set(CMAKE_CUCC_COMPILER "cucc")
 set(CMAKE_CUCC_FLAGS "-I ${MACA_PATH}/tools/cu-bridge/include/")
