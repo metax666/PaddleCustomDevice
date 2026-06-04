@@ -77,3 +77,8 @@ test_interp_antialias_op
 test_hapi_amp
 test_momentum_op
 test_adam_optimizer_fp32_fp64
+test_imperative_optimizer_v2
+test_imperative_star_gan_with_gradient_penalty
+test_network_with_dtype
+test_weight_decay
+test_cyclic_cifar_dataset
