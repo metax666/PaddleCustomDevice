@@ -26,7 +26,7 @@ export CUDA_VISIBLE_DEVICES=0
 # export
 # sleep 1000000
 
-
+pip install parameterized
 rm -r build
 mkdir -p build && cd build
 
